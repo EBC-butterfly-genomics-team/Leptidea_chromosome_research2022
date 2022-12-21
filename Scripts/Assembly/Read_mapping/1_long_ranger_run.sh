@@ -10,7 +10,7 @@ module load bioinfo-tools
 module load longranger/2.2.2
 
 
-# process 10X reads, remove barcodes etc.
+# process 10X reads, put barcodes in header etc.
 
 
 ASSEMBLY=P14502_103

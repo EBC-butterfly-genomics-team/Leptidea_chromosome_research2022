@@ -3,6 +3,7 @@
 
 ### first load bioinfo-tools and R_packages ###
 
+# makes cumulative scaffold length plot (Supplementary figure 4)
 
 library(ggplot2)
 library(scales)

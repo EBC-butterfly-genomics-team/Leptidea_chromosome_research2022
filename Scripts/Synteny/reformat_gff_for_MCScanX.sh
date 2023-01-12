@@ -5,6 +5,10 @@
 # sp. abbreviation is a two letter short for the species used
 
 
+
+
+scaffold_prefix=HiC_scaffold_
+
 # set number of chromosomes in for loop...
 
 for i in {1..42};
@@ -13,5 +17,5 @@ do
 done |\
 
 awk '{if ($3=="gene") print $1, $9, $4, $5}' |\
-         sed "s/HiC_scaffold_/$2/; s/ID=//;s/;/ /; s/G/T/" |\
+         sed "s/${chr_prefix}/$2/; s/ID=//;s/;/ /; s/G/T/" |\
          awk -v OFS="\t" '{print $1, $2, $4, $5}' > "$2".gff

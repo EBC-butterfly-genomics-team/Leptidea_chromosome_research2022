@@ -34,7 +34,7 @@ samtools index -@ 8 $ASSEMBLY-sorted.bam $ASSEMBLY-sorted.bai
 samtools stats -@8 $ASSEMBLY-sorted.bam > $ASSEMBLY-sorted-stats.txt
 samtools flagstat -@8 -O tsv $ASSEMBLY-sorted.bam > $ASSEMBLY-sorted-flagstats.txt
 
-cp *sorted* /proj/uppoff2020002/private/group_member_backups/LarsH/BLOBTOOLS/BWA
+cp *sorted* /proj/uppoff2020002/private/group_member_backups/LarsH/READ_MAPPING/
 
 
 #OPTIONS:

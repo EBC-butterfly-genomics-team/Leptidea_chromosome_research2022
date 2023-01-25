@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# takes output of MUMmer show-coords on nucmer alignment and makes two bed files, one with alignment block coordinates and one with breakpoint coordinates
+# takes output of MUMmer show-coords (with settings: show-coords -rTH -I 90) on nucmer alignment and makes two bed files, one with alignment block coordinates and one with breakpoint coordinates
 # run: ./identify_chr_breakpoins.sh <filtered_alignment_1.coords>
 
 

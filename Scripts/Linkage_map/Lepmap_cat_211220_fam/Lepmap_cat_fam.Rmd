@@ -1,0 +1,1840 @@
+---
+title: "R Notebook Lept_swe_fam"
+output: html_notebook
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Cmd+Shift+Enter*. 
+
+```{r setup}
+library(ggplot2)
+library(viridis)
+library("tidyr")
+library(dplyr)
+library(ggpubr)
+#install.packages("chromoMap")
+library(chromoMap)
+library(RIdeogram)
+library(RColorBrewer)
+```
+
+
+```{r 3c9_eval1, eval=FALSE}
+FAMILY="3c9"
+plot_title=paste("cat_", FAMILY, "_eval1", sep = "")
+file_name=paste(FAMILY, "/OrderMarker_cat_", FAMILY, "_eval1_int/order_all_int.txt", sep = "")
+file_name_mod=paste(FAMILY, "/OrderMarker_cat_", FAMILY, "_eval1_int/order_all_int_mod.txt", sep = "")
+
+map_for_HiC=read.table(file_name)
+
+head(map_for_HiC)
+str(map_for_HiC)
+
+#map_for_HiC=map_for_HiC[(map_for_HiC$V6-map_for_HiC$V5) < 21,]
+#remove uncertain markers
+map_for_HiC$V7 <-1
+map_for_HiC[(map_for_HiC$V6-map_for_HiC$V5) > 20,]$V7 <- 0
+map_for_HiC$V7 <- as.factor(map_for_HiC$V7)
+
+map_for_HiC$V3 <- as.factor(map_for_HiC$V3)
+map_for_HiC$V1 <- as.factor(map_for_HiC$V1)
+
+#write filtered file, and then use to remove non-inf markers at ends
+#write.table(map_for_HiC, file = file_name_mod, quote = FALSE, row.names = FALSE)
+
+#maps sorted after scaffold
+ggplot(map_for_HiC) +
+  #geom_point() +
+  geom_linerange(data=map_for_HiC, mapping=aes(x=V2, ymin=V5, ymax=V6, colour=V3), size=0.2) +
+  geom_point(data=map_for_HiC, mapping=aes(x=V2, y=V5, colour=V3), size=0.5) +
+  geom_point(data=map_for_HiC, mapping=aes(x=V2, y=V6, colour=V3), size=0.5) +
+  facet_wrap(~map_for_HiC$V1, scales="free") +
+  #scale_colour_manual(values = c("grey14", "red")) +
+  #guides(colour=FALSE) +
+  labs(title = plot_title) +
+  xlab("Position (bp)") +
+  ylab("Distance (cM)") +
+  theme_classic()
+
+#maps sorted after lg
+ggplot(map_for_HiC) +
+  #geom_point() +
+  geom_linerange(data=map_for_HiC, mapping=aes(x=V2, ymin=V5, ymax=V6, colour=V1), size=0.2) +
+  geom_point(data=map_for_HiC, mapping=aes(x=V2, y=V5, colour=V1), size=0.5) +
+  geom_point(data=map_for_HiC, mapping=aes(x=V2, y=V6, colour=V1), size=0.5) +
+  facet_wrap(~map_for_HiC$V3, scales="free") +
+  #scale_colour_manual(values = c("grey14", "red")) +
+  #guides(colour=FALSE) +
+  labs(title = plot_title) +
+  xlab("Position (bp)") +
+  ylab("Distance (cM)") +
+  theme_classic()
+
+
+
+```
+
+```{r 3c9_eval2, eval=FALSE}
+FAMILY="3c9"
+plot_title=paste("cat_", FAMILY, "_eval2", sep = "")
+file_name=paste(FAMILY, "/OrderMarker_cat_", FAMILY, "_mask13_10run_int/order_all_int.txt", sep = "")
+file_name_mod=paste(FAMILY, "/OrderMarker_cat_", FAMILY, "_mask13_10run_int/order_all_int_mod.txt", sep = "")
+
+map_for_HiC=read.table(file_name)
+
+head(map_for_HiC)
+str(map_for_HiC)
+
+#map_for_HiC=map_for_HiC[(map_for_HiC$V6-map_for_HiC$V5) < 21,]
+#remove uncertain markers
+map_for_HiC$V7 <-1
+#map_for_HiC[(map_for_HiC$V6-map_for_HiC$V5) > 20,]$V7 = 0
+map_for_HiC$V7 <- as.factor(map_for_HiC$V7)
+
+map_for_HiC$V3 <- as.factor(map_for_HiC$V3)
+map_for_HiC$V1 <- as.factor(map_for_HiC$V1)
+
+#write filtered file, and then use to remove non-inf markers at ends
+#write.table(map_for_HiC, file = file_name_mod, quote = FALSE, row.names = FALSE)
+
+#maps sorted after scaffold
+ggplot(map_for_HiC) +
+  #geom_point() +
+  geom_linerange(data=map_for_HiC, mapping=aes(x=V2, ymin=V5, ymax=V6, colour=V3), size=0.2) +
+  geom_point(data=map_for_HiC, mapping=aes(x=V2, y=V5, colour=V3), size=0.5) +
+  geom_point(data=map_for_HiC, mapping=aes(x=V2, y=V6, colour=V3), size=0.5) +
+  facet_wrap(~map_for_HiC$V1, scales="free") +
+  #scale_colour_manual(values = c("grey14", "red")) +
+  #guides(colour=FALSE) +
+  labs(title = plot_title) +
+  xlab("Position (bp)") +
+  ylab("Distance (cM)") +
+  theme_classic()
+
+#maps sorted after lg
+ggplot(map_for_HiC) +
+  #geom_point() +
+  geom_linerange(data=map_for_HiC, mapping=aes(x=V2, ymin=V5, ymax=V6, colour=V1), size=0.2) +
+  geom_point(data=map_for_HiC, mapping=aes(x=V2, y=V5, colour=V1), size=0.5) +
+  geom_point(data=map_for_HiC, mapping=aes(x=V2, y=V6, colour=V1), size=0.5) +
+  facet_wrap(~map_for_HiC$V3, scales="free") +
+  #scale_colour_manual(values = c("grey14", "red")) +
+  #guides(colour=FALSE) +
+  labs(title = plot_title) +
+  xlab("Position (bp)") +
+  ylab("Distance (cM)") +
+  theme_classic()
+
+
+
+```
+
+```{r 3c9_eval3, eval=FALSE}
+FAMILY="3c9"
+plot_title=paste("cat_", FAMILY, "_eval3", sep = "")
+file_name=paste(FAMILY, "/OrderMarker_cat_", FAMILY, "_mask13_10run_int_eval3/order_all_int.txt", sep = "")
+file_name_mod=paste(FAMILY, "/OrderMarker_cat_", FAMILY, "_mask13_10run_int_eval3/order_all_int_mod.txt", sep = "")
+
+map_for_HiC=read.table(file_name)
+
+head(map_for_HiC)
+str(map_for_HiC)
+
+#map_for_HiC=map_for_HiC[(map_for_HiC$V6-map_for_HiC$V5) < 21,]
+#remove uncertain markers
+map_for_HiC$V7 <-1
+#map_for_HiC[(map_for_HiC$V6-map_for_HiC$V5) > 20,]$V7 = 0
+map_for_HiC$V7 <- as.factor(map_for_HiC$V7)
+
+map_for_HiC$V3 <- as.factor(map_for_HiC$V3)
+map_for_HiC$V1 <- as.factor(map_for_HiC$V1)
+
+#write filtered file, and then use to remove non-inf markers at ends
+write.table(map_for_HiC, file = file_name_mod, quote = FALSE, row.names = FALSE)
+
+#maps sorted after scaffold
+ggplot(map_for_HiC) +
+  #geom_point() +
+  geom_linerange(data=map_for_HiC, mapping=aes(x=V2, ymin=V5, ymax=V6, colour=V3), size=0.2) +
+  geom_point(data=map_for_HiC, mapping=aes(x=V2, y=V5, colour=V3), size=0.5) +
+  geom_point(data=map_for_HiC, mapping=aes(x=V2, y=V6, colour=V3), size=0.5) +
+  facet_wrap(~map_for_HiC$V1, scales="free") +
+  #scale_colour_manual(values = c("grey14", "red")) +
+  #guides(colour=FALSE) +
+  labs(title = plot_title) +
+  xlab("Position (bp)") +
+  ylab("Distance (cM)") +
+  theme_classic()
+
+#maps sorted after lg
+ggplot(map_for_HiC) +
+  #geom_point() +
+  geom_linerange(data=map_for_HiC, mapping=aes(x=V2, ymin=V5, ymax=V6, colour=V1), size=0.2) +
+  geom_point(data=map_for_HiC, mapping=aes(x=V2, y=V5, colour=V1), size=0.5) +
+  geom_point(data=map_for_HiC, mapping=aes(x=V2, y=V6, colour=V1), size=0.5) +
+  facet_wrap(~map_for_HiC$V3, scales="free") +
+  #scale_colour_manual(values = c("grey14", "red")) +
+  #guides(colour=FALSE) +
+  labs(title = plot_title) +
+  xlab("Position (bp)") +
+  ylab("Distance (cM)") +
+  theme_classic()
+
+
+
+```
+
+
+```{r 3c9_plot}
+
+FAMILY="3c9"
+plot_title=paste("cat_", FAMILY, "_eval3", sep = "")
+
+file_name_mod=paste(FAMILY, "/OrderMarker_cat_", FAMILY, "_mask13_10run_int_eval3/order_all_int_mod.txt", sep = "")
+
+file_name_rearr=paste(FAMILY, "/OrderMarker_cat_", FAMILY, "_mask13_10run_int_eval3/order_all_int_rearr.txt", sep = "")
+
+map_for_HiC=read.table(file_name_mod, header=T)
+
+
+head(map_for_HiC)
+#  V1       V2 V3   V4 V5 V6 (V7)
+#1  1 32692290  1 1624  0  0  1
+#scaffold position lg marker_nr int_low int_high (valid)
+
+map_for_HiC$V1 <- as.factor(map_for_HiC$V1)
+
+#rearrange maps so all positive slope
+map_for_HiC$V3 <- as.numeric(map_for_HiC$V3)
+for (lg in unique(map_for_HiC$V3)){
+  map_temp <- map_for_HiC[map_for_HiC$V3==lg,]
+  if (coef(lm(map_temp$V5~map_temp$V2))[2]<0){
+  map_temp$V5 <- max(map_temp$V5) - map_temp$V5
+  map_temp$V6 <- max(map_temp$V6) - map_temp$V6
+  }
+  if (lg==1){
+    map_rearr <- map_temp
+  } else {
+    map_rearr <- rbind(map_rearr, map_temp)
+  }
+  }
+
+map_rearr$V3 <- as.factor(map_rearr$V3)
+map_rearr$V1 <- as.factor(map_rearr$V1)
+
+
+#https://stackoverflow.com/questions/2547402/how-to-find-the-statistical-mode
+Mode <- function(x, na.rm = FALSE) {
+  if(na.rm){
+    x = x[!is.na(x)]
+  }
+
+  ux <- unique(x)
+  return(ux[which.max(tabulate(match(x, ux)))])
+}
+
+#add the most common scaffold per lg
+lg_to_sc <- as.data.frame(aggregate(V1~V3, FUN=Mode, data=map_rearr))
+colnames(lg_to_sc) <- c("V3", "V8")
+#add to df
+map_rearr <- left_join(map_rearr, lg_to_sc)
+
+write.table(map_rearr, file = file_name_rearr, quote = FALSE, row.names = FALSE)
+
+ggplot(map_rearr) +
+  #geom_point() +
+  geom_linerange(data=map_rearr, mapping=aes(x=V2, ymin=V5, ymax=V6, colour=V1), size=0.2) +
+  geom_point(data=map_rearr, mapping=aes(x=V2, y=V5, colour=V1), size=0.5) +
+  geom_point(data=map_rearr, mapping=aes(x=V2, y=V6, colour=V1), size=0.5) +
+  facet_wrap(~map_rearr$V8, scales="free") +
+  stat_cor(aes(x=V2, y=(V5+V6)/2), method = "spearman", size=2, cor.coef.name = "rho", label.x.npc = "left", label.y.npc = "top") +
+  #scale_colour_manual(values = c("grey14", "red")) +
+  #guides(colour=FALSE) +
+  labs(title = paste(plot_title, "rearr", sep="")) +
+  xlab("Position (bp)") +
+  ylab("Distance (cM)") +
+  theme_classic()
+
+ggsave(paste("figures/marey_", FAMILY, ".pdf", sep = ""), device = "pdf", height = 9, width = 12)
+
+
+```
+
+```{r ideogram_3c9}
+#prepare map for chromomap
+#chr(uniq name for chr) start end centromer(optional)
+
+#chromoMap(list(chr_file),list(annotation_file), data_type = "categorical", data_based_color_map = T)
+
+#Use Rideogram instead!!!
+#RIdeogram
+#library(RIdeogram)
+
+FAMILY="3c9"
+file_name_rearr=paste(FAMILY, "/OrderMarker_cat_", FAMILY, "_mask13_10run_int_eval3/order_all_int_rearr.txt", sep = "")
+map_rearr <- read.table(file = file_name_rearr, header = T)
+
+map_rearr$V1 <- as.factor(map_rearr$V1)
+map_rearr$V8 <- as.factor(map_rearr$V8)
+
+#annotation file shows the fields to highlight
+#scaffold and lg
+annotation_file <- unique(map_rearr[,c("V1", "V3", "V8")])
+#add endposition for each lg
+annotation_file <- left_join(annotation_file, as.data.frame(aggregate(V2~V3, FUN=max, data=map_rearr)))
+
+#merged add the length of the smaller scaffold to the larger
+annotation_file[annotation_file$V1==18 & annotation_file$V3==3, "V2"] <- max(map_rearr[map_rearr$V1=="6", "V2"]) + max(map_rearr[map_rearr$V1=="18", "V2"])
+
+#split set the end coordinates for the second part of scaffold
+annotation_file[annotation_file$V1==5 & annotation_file$V3==34, "V2"] <- annotation_file[annotation_file$V1==5 & annotation_file$V3==34, "V2"] - annotation_file[annotation_file$V1==5 & annotation_file$V3==45, "V2"]
+
+annotation_file$V4 <- 1
+
+#merged start coordinate for the smaller scaffold
+annotation_file[annotation_file$V1==18 & annotation_file$V3==3, "V4"] <- max(map_rearr[map_rearr$V1=="6", "V2"]) + 1
+
+
+#change name of split chr so it is at the end
+#add level
+levels(annotation_file$V8) <- c(levels(annotation_file$V8),"53") 
+annotation_file[annotation_file$V1==5 & annotation_file$V3==34, "V8"] <- "53"
+
+annotation_file <- annotation_file[,c("V1", "V8", "V4", "V2")]
+#change col names to match the input (feature (scaffold), chr(lg), start, end)
+colnames(annotation_file) <- c("V1", "V2", "V3", "V4")
+annotation_file$V5 <- 0
+
+#add large inversions
+# V1 <- as.factor(c(rep(2, 6), rep(4,10), rep(8,4), rep(24,5)))
+# V2 <- as.factor(c(rep(2, 6), rep(4,10), rep(8,4), rep(24,5)))
+# V3 <- c(seq(26756922, max(map_rearr[map_rearr$V1==2,"V2"]), 1000000), 
+#         seq(1, 9206906, 1000000),
+#         seq(1,3809448,1000000),
+#         seq(6105189, max(map_rearr[map_rearr$V1==24,"V2"]), 1000000))
+# V4  <- c(seq(26756922+500000, max(map_rearr[map_rearr$V1==2,"V2"]), 1000000), 
+#          seq(1+500000, 9206906, 1000000), 9206906, 
+#          seq(1+500000,3809448,1000000),
+#          seq(6105189+500000, max(map_rearr[map_rearr$V1==24,"V2"]), 1000000))
+# V5 <- -1
+# inv_df <- data.frame(V1, V2, V3, V4, V5)
+# 
+# annotation_file <- rbind(annotation_file, inv_df)
+
+#assign value for colouring
+annotation_file[annotation_file$V1=="6", "V5"] <- 1 #5/27
+annotation_file[annotation_file$V1=="18", "V5"] <- 2 #21/28
+annotation_file[annotation_file$V1=="5", "V5"] <- 4 #25/18
+# annotation_file[annotation_file$V1=="4" &  annotation_file$V5==-1, "V5"] <- 6 #11/26
+# annotation_file[annotation_file$V1=="2" &  annotation_file$V5==-1, "V5"] <- 6 #11/26
+# annotation_file[annotation_file$V1=="8" &  annotation_file$V5==-1, "V5"] <- 6 #11/26
+# annotation_file[annotation_file$V1=="24" &  annotation_file$V5==-1, "V5"] <- 6 #11/26
+
+#annotation_file[annotation_file$V1=="5", "V5"] <- 6 #25/18
+
+#annotation_file[annotation_file$V1=="lg_18", "V5"] <- 5 #split7
+#annotation_file[annotation_file$V1=="lg_24", "V5"] <- 6 #split7
+
+anno_file <- annotation_file[,2:5]
+colnames(anno_file) <- c("Chr", "Start", "End", "Value")
+
+#remove other chr (plot white)
+anno_file2 <- anno_file[anno_file$Value>0,]
+
+
+#[1] "#1B9E77" "#D95F02" "#7570B3" "#E7298A" "#66A61E" "#E6AB02"
+
+#col_4 <- c("#1B9E77", "#D95F02", "#7570B3", "#E7298A")
+col_6 <- brewer.pal(6, "Dark2")
+col_9C <- c("#1B9E77","#E7298A","#D95F02", "#E6AB02")  
+  #c("#1B9E77", "#D95F02", "#7570B3", "#E7298A","#66A61E","#E6AB02")
+
+
+#karyofile is the basic chromosome sizes
+#position of the last marker in each lg
+karyo_file=aggregate(V4~V2, FUN = max, data = annotation_file)
+#last position
+karyo_file$V3 <- karyo_file$V4
+#first position
+karyo_file$V4 <- 1
+colnames(karyo_file) <- c("Chr", "Start", "End")
+karyo_file$Chr <- as.character(karyo_file$Chr)
+
+
+#make a file for marking larger inversions
+# Chr <- c(rep(2, 6), rep(4,10))
+# Type <- c(rep("Inv",16))
+# Shape <- c(rep("triangle",10))
+# Start <- c(seq(26756922, max(map_rearr[map_rearr$V1==2,"V2"]), 1000000), seq(1, 9206906, 1000000))
+# End  <- c(seq(26756922, max(map_rearr[map_rearr$V1==2,"V2"]), 1000000), seq(1, 9206906, 1000000))
+# color <- c(rep("E41A1C",10))
+# 
+# poss_inv <- data.frame(Type, Shape, Chr, Start, End, color)
+# 
+#label = poss_inv, label_type = "marker",
+
+ideogram(karyotype = karyo_file, overlaid = anno_file2,  colorset1=col_9C, output = paste("figures/", FAMILY, "_chromosome.svg"))
+convertSVG(svg = paste("figures/", FAMILY, "_chromosome.svg"), file = paste("figures/", FAMILY, "_chromosome.png"), device = "png")
+
+
+```
+
+
+```{r 4C_eval1, eval=FALSE}
+FAMILY="4C"
+plot_title=paste("cat_", FAMILY, "_eval1", sep = "")
+file_name=paste(FAMILY, "/OrderMarker_cat_", FAMILY, "_eval1_int/order_all_int.txt", sep = "")
+file_name_mod=paste(FAMILY, "/OrderMarker_cat_", FAMILY, "_eval1_int/order_all_int_mod.txt", sep = "")
+
+map_for_HiC=read.table(file_name)
+
+head(map_for_HiC)
+str(map_for_HiC)
+
+#map_for_HiC=map_for_HiC[(map_for_HiC$V6-map_for_HiC$V5) < 21,]
+#remove uncertain markers
+map_for_HiC$V7 <-1
+map_for_HiC[(map_for_HiC$V6-map_for_HiC$V5) > 20,]$V7 <- 0
+map_for_HiC$V7 <- as.factor(map_for_HiC$V7)
+
+map_for_HiC$V3 <- as.factor(map_for_HiC$V3)
+map_for_HiC$V1 <- as.factor(map_for_HiC$V1)
+
+#write filtered file, and then use to remove non-inf markers at ends
+#write.table(map_for_HiC, file = file_name_mod, quote = FALSE, row.names = FALSE)
+
+#maps sorted after scaffold
+ggplot(map_for_HiC) +
+  #geom_point() +
+  geom_linerange(data=map_for_HiC, mapping=aes(x=V2, ymin=V5, ymax=V6, colour=V3), size=0.2) +
+  geom_point(data=map_for_HiC, mapping=aes(x=V2, y=V5, colour=V3), size=0.5) +
+  geom_point(data=map_for_HiC, mapping=aes(x=V2, y=V6, colour=V3), size=0.5) +
+  facet_wrap(~map_for_HiC$V1, scales="free") +
+  #scale_colour_manual(values = c("grey14", "red")) +
+  #guides(colour=FALSE) +
+  labs(title = plot_title) +
+  xlab("Position (bp)") +
+  ylab("Distance (cM)") +
+  theme_classic()
+
+#maps sorted after lg
+ggplot(map_for_HiC) +
+  #geom_point() +
+  geom_linerange(data=map_for_HiC, mapping=aes(x=V2, ymin=V5, ymax=V6, colour=V1), size=0.2) +
+  geom_point(data=map_for_HiC, mapping=aes(x=V2, y=V5, colour=V1), size=0.5) +
+  geom_point(data=map_for_HiC, mapping=aes(x=V2, y=V6, colour=V1), size=0.5) +
+  facet_wrap(~map_for_HiC$V3, scales="free") +
+  #scale_colour_manual(values = c("grey14", "red")) +
+  #guides(colour=FALSE) +
+  labs(title = plot_title) +
+  xlab("Position (bp)") +
+  ylab("Distance (cM)") +
+  theme_classic()
+
+
+
+```
+
+```{r 4C_eval2, eval=FALSE}
+FAMILY="4C"
+plot_title=paste("cat_", FAMILY, "_eval2", sep = "")
+file_name=paste(FAMILY, "/OrderMarker_cat_", FAMILY, "_mask13_10run_int/order_all_int.txt", sep = "")
+file_name_mod=paste(FAMILY, "/OrderMarker_cat_", FAMILY, "_mask13_10run_int/order_all_int_mod.txt", sep = "")
+
+map_for_HiC=read.table(file_name)
+
+head(map_for_HiC)
+str(map_for_HiC)
+
+#map_for_HiC=map_for_HiC[(map_for_HiC$V6-map_for_HiC$V5) < 21,]
+#remove uncertain markers
+map_for_HiC$V7 <-1
+#map_for_HiC[(map_for_HiC$V6-map_for_HiC$V5) > 20,]$V7 = 0
+map_for_HiC$V7 <- as.factor(map_for_HiC$V7)
+
+map_for_HiC$V3 <- as.factor(map_for_HiC$V3)
+map_for_HiC$V1 <- as.factor(map_for_HiC$V1)
+
+#write filtered file, and then use to remove non-inf markers at ends
+#write.table(map_for_HiC, file = file_name_mod, quote = FALSE, row.names = FALSE)
+
+#maps sorted after scaffold
+ggplot(map_for_HiC) +
+  #geom_point() +
+  geom_linerange(data=map_for_HiC, mapping=aes(x=V2, ymin=V5, ymax=V6, colour=V3), size=0.2) +
+  geom_point(data=map_for_HiC, mapping=aes(x=V2, y=V5, colour=V3), size=0.5) +
+  geom_point(data=map_for_HiC, mapping=aes(x=V2, y=V6, colour=V3), size=0.5) +
+  facet_wrap(~map_for_HiC$V1, scales="free") +
+  #scale_colour_manual(values = c("grey14", "red")) +
+  #guides(colour=FALSE) +
+  labs(title = plot_title) +
+  xlab("Position (bp)") +
+  ylab("Distance (cM)") +
+  theme_classic()
+
+#maps sorted after lg
+ggplot(map_for_HiC) +
+  #geom_point() +
+  geom_linerange(data=map_for_HiC, mapping=aes(x=V2, ymin=V5, ymax=V6, colour=V1), size=0.2) +
+  geom_point(data=map_for_HiC, mapping=aes(x=V2, y=V5, colour=V1), size=0.5) +
+  geom_point(data=map_for_HiC, mapping=aes(x=V2, y=V6, colour=V1), size=0.5) +
+  facet_wrap(~map_for_HiC$V3, scales="free") +
+  #scale_colour_manual(values = c("grey14", "red")) +
+  #guides(colour=FALSE) +
+  labs(title = plot_title) +
+  xlab("Position (bp)") +
+  ylab("Distance (cM)") +
+  theme_classic()
+
+
+
+```
+
+
+```{r 4C_eval3, eval=FALSE}
+FAMILY="4C"
+plot_title=paste("cat_", FAMILY, "_eval3", sep = "")
+file_name=paste(FAMILY, "/OrderMarker_cat_", FAMILY, "_mask13_10run_int_eval3/order_all_int.txt", sep = "")
+file_name_mod=paste(FAMILY, "/OrderMarker_cat_", FAMILY, "_mask13_10run_int_eval3/order_all_int_mod.txt", sep = "")
+
+map_for_HiC=read.table(file_name)
+
+head(map_for_HiC)
+str(map_for_HiC)
+
+#map_for_HiC=map_for_HiC[(map_for_HiC$V6-map_for_HiC$V5) < 21,]
+#remove uncertain markers
+map_for_HiC$V7 <-1
+#map_for_HiC[(map_for_HiC$V6-map_for_HiC$V5) > 20,]$V7 = 0
+map_for_HiC$V7 <- as.factor(map_for_HiC$V7)
+
+map_for_HiC$V3 <- as.factor(map_for_HiC$V3)
+map_for_HiC$V1 <- as.factor(map_for_HiC$V1)
+
+#write filtered file, and then use to remove non-inf markers at ends
+#write.table(map_for_HiC, file = file_name_mod, quote = FALSE, row.names = FALSE)
+
+#maps sorted after scaffold
+ggplot(map_for_HiC) +
+  #geom_point() +
+  geom_linerange(data=map_for_HiC, mapping=aes(x=V2, ymin=V5, ymax=V6, colour=V3), size=0.2) +
+  geom_point(data=map_for_HiC, mapping=aes(x=V2, y=V5, colour=V3), size=0.5) +
+  geom_point(data=map_for_HiC, mapping=aes(x=V2, y=V6, colour=V3), size=0.5) +
+  facet_wrap(~map_for_HiC$V1, scales="free") +
+  #scale_colour_manual(values = c("grey14", "red")) +
+  #guides(colour=FALSE) +
+  labs(title = plot_title) +
+  xlab("Position (bp)") +
+  ylab("Distance (cM)") +
+  theme_classic()
+
+#maps sorted after lg
+ggplot(map_for_HiC) +
+  #geom_point() +
+  geom_linerange(data=map_for_HiC, mapping=aes(x=V2, ymin=V5, ymax=V6, colour=V1), size=0.2) +
+  geom_point(data=map_for_HiC, mapping=aes(x=V2, y=V5, colour=V1), size=0.5) +
+  geom_point(data=map_for_HiC, mapping=aes(x=V2, y=V6, colour=V1), size=0.5) +
+  facet_wrap(~map_for_HiC$V3, scales="free") +
+  #scale_colour_manual(values = c("grey14", "red")) +
+  #guides(colour=FALSE) +
+  labs(title = plot_title) +
+  xlab("Position (bp)") +
+  ylab("Distance (cM)") +
+  theme_classic()
+
+
+
+```
+
+
+```{r  4C_plot}
+
+FAMILY="4C"
+plot_title=paste("cat_", FAMILY, "_eval4", sep = "")
+
+file_name_mod=paste(FAMILY, "/OrderMarker_cat_", FAMILY, "_mask13_10run_int_eval3_mod/order_all_int_compl.txt", sep = "")
+
+file_name_rearr=paste(FAMILY, "/OrderMarker_cat_", FAMILY, "_mask13_10run_int_eval3_mod/order_all_int_rearr.txt", sep = "")
+
+map_for_HiC=read.table(file_name_mod)
+
+
+head(map_for_HiC)
+#  V1       V2 V3   V4 V5 V6 (V7)
+#1  1 32692290  1 1624  0  0  1
+#scaffold position lg marker_nr int_low int_high (valid)
+
+map_for_HiC$V1 <- as.factor(map_for_HiC$V1)
+
+#rearrange maps so all positive slope
+map_for_HiC$V3 <- as.numeric(map_for_HiC$V3)
+for (lg in unique(map_for_HiC$V3)){
+  map_temp <- map_for_HiC[map_for_HiC$V3==lg,]
+  if (coef(lm(map_temp$V5~map_temp$V2))[2]<0){
+  map_temp$V5 <- max(map_temp$V5) - map_temp$V5
+  map_temp$V6 <- max(map_temp$V6) - map_temp$V6
+  }
+  if (lg==1){
+    map_rearr <- map_temp
+  } else {
+    map_rearr <- rbind(map_rearr, map_temp)
+  }
+  }
+
+map_rearr$V3 <- as.factor(map_rearr$V3)
+map_rearr$V1 <- as.factor(map_rearr$V1)
+
+
+#https://stackoverflow.com/questions/2547402/how-to-find-the-statistical-mode
+Mode <- function(x, na.rm = FALSE) {
+  if(na.rm){
+    x = x[!is.na(x)]
+  }
+
+  ux <- unique(x)
+  return(ux[which.max(tabulate(match(x, ux)))])
+}
+
+
+#add the most common scaffold per lg
+lg_to_sc <- as.data.frame(aggregate(V1~V3, FUN=Mode, data=map_rearr))
+colnames(lg_to_sc) <- c("V3", "V8")
+#add to df
+map_rearr <- left_join(map_rearr, lg_to_sc)
+
+write.table(map_rearr, file = file_name_rearr, quote = FALSE, row.names = FALSE)
+
+ggplot(map_rearr) +
+  #geom_point() +
+  geom_linerange(data=map_rearr, mapping=aes(x=V2, ymin=V5, ymax=V6, colour=V1), size=0.2) +
+  geom_point(data=map_rearr, mapping=aes(x=V2, y=V5, colour=V1), size=0.5) +
+  geom_point(data=map_rearr, mapping=aes(x=V2, y=V6, colour=V1), size=0.5) +
+  facet_wrap(~map_rearr$V8, scales="free") +
+  stat_cor(aes(x=V2, y=(V5+V6)/2), method = "spearman", size=2, cor.coef.name = "rho", label.x.npc = "left", label.y.npc = "top") +
+  #scale_colour_manual(values = c("grey14", "red")) +
+  #guides(colour=FALSE) +
+  labs(title = paste(plot_title, "rearr", sep="")) +
+  xlab("Position (bp)") +
+  ylab("Distance (cM)") +
+  theme_classic()
+
+ggsave(paste("figures/marey_", FAMILY, ".pdf", sep = ""), device = "pdf", height = 9, width = 12)
+
+
+ggplot(map_rearr) +
+  #geom_point() +
+  geom_linerange(data=map_rearr, mapping=aes(x=V2, ymin=V5, ymax=V6, colour=V7), size=0.2) +
+  geom_point(data=map_rearr, mapping=aes(x=V2, y=V5, colour=V7), size=0.5) +
+  geom_point(data=map_rearr, mapping=aes(x=V2, y=V6, colour=V7), size=0.5) +
+  facet_wrap(~map_rearr$V1, scales="free") +
+  stat_cor(aes(x=V2, y=(V5+V6)/2), method = "spearman", size=2, cor.coef.name = "rho", label.x.npc = "left", label.y.npc = "top") +
+  #scale_colour_manual(values = c("grey14", "red")) +
+  #guides(colour=FALSE) +
+  labs(title = paste(plot_title, "rearr", sep="")) +
+  xlab("Position (bp)") +
+  ylab("Distance (cM)") +
+  theme_classic()
+
+ggsave(paste("figures/marey_", FAMILY, "_sc.pdf", sep = ""), device = "pdf", height = 9, width = 12)
+
+#prepare map for chromomap
+#chr(uniq name for chr) start end centromer(optional)
+
+#chromoMap(list(chr_file),list(annotation_file), data_type = "categorical", data_based_color_map = T)
+
+```
+
+```{r ideogram_4C}
+
+#Use Rideogram instead!!!
+#RIdeogram
+#library(RIdeogram)
+
+FAMILY="4C"
+file_name_rearr=paste(FAMILY, "/OrderMarker_cat_", FAMILY, "_mask13_10run_int_eval3_mod/order_all_int_rearr.txt", sep = "")
+map_rearr <- read.table(file = file_name_rearr, header = T)
+
+map_rearr$V1 <- as.factor(map_rearr$V1)
+map_rearr$V8 <- as.factor(map_rearr$V8)
+
+
+#annotation file shows the fields to highlight
+#scaffold and lg
+annotation_file <- unique(map_rearr[,c("V1", "V3", "V8")])
+#add endposition for each lg
+annotation_file <- left_join(annotation_file, as.data.frame(aggregate(V2~V3, FUN=max, data=map_rearr)))
+
+#merged add the length of the smaller scaffold to the larger
+annotation_file[annotation_file$V1==18 & annotation_file$V3==3, "V2"] <- max(map_rearr[map_rearr$V1=="6", "V2"]) + max(map_rearr[map_rearr$V1=="18", "V2"])
+
+#split set the end coordinates for the second part of scaffold
+annotation_file[annotation_file$V1==5 & annotation_file$V3==23, "V2"] <- annotation_file[annotation_file$V1==5 & annotation_file$V3==23, "V2"] - annotation_file[annotation_file$V1==5 & annotation_file$V3==41, "V2"]
+
+annotation_file$V4 <- 1
+
+#merged start coordinate for the smaller scaffold
+annotation_file[annotation_file$V1==18 & annotation_file$V3==3, "V4"] <- max(map_rearr[map_rearr$V1=="6", "V2"]) + 1
+
+
+#change name of split chr so it is at the end
+#add level
+levels(annotation_file$V8) <- c(levels(annotation_file$V8),"53") 
+annotation_file[annotation_file$V1==5 & annotation_file$V3==23, "V8"] <- "53"
+
+annotation_file <- annotation_file[,c("V1", "V8", "V4", "V2")]
+#change col names to match the input (feature (scaffold), chr(lg), start, end)
+colnames(annotation_file) <- c("V1", "V2", "V3", "V4")
+annotation_file$V5 <- 0
+
+#add large inversions
+# V1 <- as.factor(c(rep(2, 7), rep(8,4)))
+# V2 <- as.factor(c(rep(2, 7), rep(8,4)))
+# V3 <- c(seq(1, 6109175, 1000000), 
+#         seq(1, 3687162, 1000000))
+# V4  <- c(seq(1+500000, 6109175, 1000000), 6109175,
+#          seq(1+500000, 3687162, 1000000)) 
+# V5 <- -1
+# inv_df <- data.frame(V1, V2, V3, V4, V5)
+# 
+# annotation_file <- rbind(annotation_file, inv_df)
+# 
+#assign value for colouring
+annotation_file[annotation_file$V1=="6", "V5"] <- 1 #5/27
+annotation_file[annotation_file$V1=="18", "V5"] <- 2 #21/28
+annotation_file[annotation_file$V1=="5", "V5"] <- 4 #25/18
+#annotation_file[annotation_file$V1=="4" &  annotation_file$V5==-1, "V5"] <- 4 #11/26
+# annotation_file[annotation_file$V1=="2" &  annotation_file$V5==-1, "V5"] <- 6 #11/26
+# annotation_file[annotation_file$V1=="8" &  annotation_file$V5==-1, "V5"] <- 6 #11/26
+#annotation_file[annotation_file$V1=="24" &  annotation_file$V5==-1, "V5"] <- 4 #11/26
+
+#annotation_file[annotation_file$V1=="5", "V5"] <- 6 #25/18
+
+#annotation_file[annotation_file$V1=="lg_18", "V5"] <- 5 #split7
+#annotation_file[annotation_file$V1=="lg_24", "V5"] <- 6 #split7
+
+anno_file <- annotation_file[,2:5]
+colnames(anno_file) <- c("Chr", "Start", "End", "Value")
+
+#remove other chr (plot white)
+anno_file2 <- anno_file[anno_file$Value>0,]
+
+
+#[1] "#1B9E77" "#D95F02" "#7570B3" "#E7298A" "#66A61E" "#E6AB02"
+
+col_4 <- c("#1B9E77", "#D95F02", "#7570B3", "#E7298A")
+col_6 <- brewer.pal(6, "Dark2")
+col_9C <- c("#1B9E77","#E7298A","#D95F02", "#E6AB02")  
+
+
+#karyofile is the basic chromosome sizes
+#position of the last marker in each lg
+karyo_file=aggregate(V4~V2, FUN = max, data = annotation_file)
+#last position
+karyo_file$V3 <- karyo_file$V4
+#first position
+karyo_file$V4 <- 1
+colnames(karyo_file) <- c("Chr", "Start", "End")
+karyo_file$Chr <- as.character(karyo_file$Chr)
+
+
+# #make a file for marking larger inversions
+# Chr <- c(rep(2, 6), rep(4,10))
+# Type <- c(rep("Inv",16))
+# Shape <- c(rep("triangle",10))
+# Start <- c(seq(26756922, max(map_rearr[map_rearr$V1==2,"V2"]), 1000000), seq(1, 9206906, 1000000))
+# End  <- c(seq(26756922, max(map_rearr[map_rearr$V1==2,"V2"]), 1000000), seq(1, 9206906, 1000000))
+# color <- c(rep("E41A1C",10))
+# 
+# poss_inv <- data.frame(Type, Shape, Chr, Start, End, color)
+
+#label = poss_inv, label_type = "marker",
+
+ideogram(karyotype = karyo_file, overlaid = anno_file2,  colorset1=col_9C, output = paste("figures/", FAMILY, "_chromosome.svg"))
+convertSVG(svg = paste("figures/", FAMILY, "_chromosome.svg"), file = paste("figures/", FAMILY, "_chromosome.png"), device = "png")
+
+
+```
+
+
+```{r 7C_eval1, eval=FALSE}
+FAMILY="7C"
+plot_title=paste("cat_", FAMILY, "_eval1", sep = "")
+file_name=paste(FAMILY, "/OrderMarker_cat_", FAMILY, "_eval1_int/order_all_int.txt", sep = "")
+file_name_mod=paste(FAMILY, "/OrderMarker_cat_", FAMILY, "_eval1_int/order_all_int_mod.txt", sep = "")
+
+map_for_HiC=read.table(file_name)
+
+head(map_for_HiC)
+str(map_for_HiC)
+
+#map_for_HiC=map_for_HiC[(map_for_HiC$V6-map_for_HiC$V5) < 21,]
+#remove uncertain markers
+map_for_HiC$V7 <-1
+#map_for_HiC[(map_for_HiC$V6-map_for_HiC$V5) > 20,]$V7 <- 0
+map_for_HiC$V7 <- as.factor(map_for_HiC$V7)
+
+map_for_HiC$V3 <- as.factor(map_for_HiC$V3)
+map_for_HiC$V1 <- as.factor(map_for_HiC$V1)
+
+#write filtered file, and then use to remove non-inf markers at ends
+#write.table(map_for_HiC, file = file_name_mod, quote = FALSE, row.names = FALSE)
+
+#maps sorted after scaffold
+ggplot(map_for_HiC) +
+  #geom_point() +
+  geom_linerange(data=map_for_HiC, mapping=aes(x=V2, ymin=V5, ymax=V6, colour=V3), size=0.2) +
+  geom_point(data=map_for_HiC, mapping=aes(x=V2, y=V5, colour=V3), size=0.5) +
+  geom_point(data=map_for_HiC, mapping=aes(x=V2, y=V6, colour=V3), size=0.5) +
+  facet_wrap(~map_for_HiC$V1, scales="free") +
+  #scale_colour_manual(values = c("grey14", "red")) +
+  #guides(colour=FALSE) +
+  labs(title = plot_title) +
+  xlab("Position (bp)") +
+  ylab("Distance (cM)") +
+  theme_classic()
+
+#maps sorted after lg
+ggplot(map_for_HiC) +
+  #geom_point() +
+  geom_linerange(data=map_for_HiC, mapping=aes(x=V2, ymin=V5, ymax=V6, colour=V1), size=0.2) +
+  geom_point(data=map_for_HiC, mapping=aes(x=V2, y=V5, colour=V1), size=0.5) +
+  geom_point(data=map_for_HiC, mapping=aes(x=V2, y=V6, colour=V1), size=0.5) +
+  facet_wrap(~map_for_HiC$V3, scales="free") +
+  #scale_colour_manual(values = c("grey14", "red")) +
+  #guides(colour=FALSE) +
+  labs(title = plot_title) +
+  xlab("Position (bp)") +
+  ylab("Distance (cM)") +
+  theme_classic()
+
+
+
+```
+```{r 7C_eval2, eval=FALSE}
+FAMILY="7C"
+plot_title=paste("cat_", FAMILY, "_eval2", sep = "")
+file_name=paste(FAMILY, "/OrderMarker_cat_", FAMILY, "_mask13_10run_int/order_all_int.txt", sep = "")
+file_name_mod=paste(FAMILY, "/OrderMarker_cat_", FAMILY, "_mask13_10run_int/order_all_int_mod.txt", sep = "")
+
+map_for_HiC=read.table(file_name)
+
+head(map_for_HiC)
+str(map_for_HiC)
+
+#map_for_HiC=map_for_HiC[(map_for_HiC$V6-map_for_HiC$V5) < 21,]
+#remove uncertain markers
+map_for_HiC$V7 <-1
+#map_for_HiC[(map_for_HiC$V6-map_for_HiC$V5) > 20,]$V7 = 0
+map_for_HiC$V7 <- as.factor(map_for_HiC$V7)
+
+map_for_HiC$V3 <- as.factor(map_for_HiC$V3)
+map_for_HiC$V1 <- as.factor(map_for_HiC$V1)
+
+#write filtered file, and then use to remove non-inf markers at ends
+#write.table(map_for_HiC, file = file_name_mod, quote = FALSE, row.names = FALSE)
+
+#maps sorted after scaffold
+ggplot(map_for_HiC) +
+  #geom_point() +
+  geom_linerange(data=map_for_HiC, mapping=aes(x=V2, ymin=V5, ymax=V6, colour=V3), size=0.2) +
+  geom_point(data=map_for_HiC, mapping=aes(x=V2, y=V5, colour=V3), size=0.5) +
+  geom_point(data=map_for_HiC, mapping=aes(x=V2, y=V6, colour=V3), size=0.5) +
+  facet_wrap(~map_for_HiC$V1, scales="free") +
+  #scale_colour_manual(values = c("grey14", "red")) +
+  #guides(colour=FALSE) +
+  labs(title = plot_title) +
+  xlab("Position (bp)") +
+  ylab("Distance (cM)") +
+  theme_classic()
+
+#maps sorted after lg
+ggplot(map_for_HiC) +
+  #geom_point() +
+  geom_linerange(data=map_for_HiC, mapping=aes(x=V2, ymin=V5, ymax=V6, colour=V1), size=0.2) +
+  geom_point(data=map_for_HiC, mapping=aes(x=V2, y=V5, colour=V1), size=0.5) +
+  geom_point(data=map_for_HiC, mapping=aes(x=V2, y=V6, colour=V1), size=0.5) +
+  facet_wrap(~map_for_HiC$V3, scales="free") +
+  #scale_colour_manual(values = c("grey14", "red")) +
+  #guides(colour=FALSE) +
+  labs(title = plot_title) +
+  xlab("Position (bp)") +
+  ylab("Distance (cM)") +
+  theme_classic()
+
+
+
+```
+
+```{r 7C_eval3, eval=FALSE}
+FAMILY="7C"
+plot_title=paste("cat_", FAMILY, "_eval3", sep = "")
+file_name=paste(FAMILY, "/OrderMarker_cat_", FAMILY, "_mask13_10run_int_eval3/order_all_int.txt", sep = "")
+file_name_mod=paste(FAMILY, "/OrderMarker_cat_", FAMILY, "_mask13_10run_int_eval3/order_all_int_mod.txt", sep = "")
+
+map_for_HiC=read.table(file_name)
+
+head(map_for_HiC)
+str(map_for_HiC)
+
+#map_for_HiC=map_for_HiC[(map_for_HiC$V6-map_for_HiC$V5) < 21,]
+#remove uncertain markers
+map_for_HiC$V7 <-1
+#map_for_HiC[(map_for_HiC$V6-map_for_HiC$V5) > 20,]$V7 = 0
+map_for_HiC$V7 <- as.factor(map_for_HiC$V7)
+
+map_for_HiC$V3 <- as.factor(map_for_HiC$V3)
+map_for_HiC$V1 <- as.factor(map_for_HiC$V1)
+
+#write filtered file, and then use to remove non-inf markers at ends
+#write.table(map_for_HiC, file = file_name_mod, quote = FALSE, row.names = FALSE)
+
+#maps sorted after scaffold
+ggplot(map_for_HiC) +
+  #geom_point() +
+  geom_linerange(data=map_for_HiC, mapping=aes(x=V2, ymin=V5, ymax=V6, colour=V3), size=0.2) +
+  geom_point(data=map_for_HiC, mapping=aes(x=V2, y=V5, colour=V3), size=0.5) +
+  geom_point(data=map_for_HiC, mapping=aes(x=V2, y=V6, colour=V3), size=0.5) +
+  facet_wrap(~map_for_HiC$V1, scales="free") +
+  #scale_colour_manual(values = c("grey14", "red")) +
+  #guides(colour=FALSE) +
+  labs(title = plot_title) +
+  xlab("Position (bp)") +
+  ylab("Distance (cM)") +
+  theme_classic()
+
+#maps sorted after lg
+ggplot(map_for_HiC) +
+  #geom_point() +
+  geom_linerange(data=map_for_HiC, mapping=aes(x=V2, ymin=V5, ymax=V6, colour=V1), size=0.2) +
+  geom_point(data=map_for_HiC, mapping=aes(x=V2, y=V5, colour=V1), size=0.5) +
+  geom_point(data=map_for_HiC, mapping=aes(x=V2, y=V6, colour=V1), size=0.5) +
+  facet_wrap(~map_for_HiC$V3, scales="free") +
+  #scale_colour_manual(values = c("grey14", "red")) +
+  #guides(colour=FALSE) +
+  labs(title = plot_title) +
+  xlab("Position (bp)") +
+  ylab("Distance (cM)") +
+  theme_classic()
+
+
+
+```
+
+
+```{r 7C_plot}
+
+FAMILY="7C"
+plot_title=paste("cat_", FAMILY, "_eval3", sep = "")
+
+file_name_mod=paste(FAMILY, "/OrderMarker_cat_", FAMILY, "_mask13_10run_int_eval3/order_all_int_mod.txt", sep = "")
+
+file_name_rearr=paste(FAMILY, "/OrderMarker_cat_", FAMILY, "_mask13_10run_int_eval3/order_all_int_rearr.txt", sep = "")
+
+map_for_HiC=read.table(file_name_mod, header=T)
+
+
+head(map_for_HiC)
+#  V1       V2 V3   V4 V5 V6 (V7)
+#1  1 32692290  1 1624  0  0  1
+#scaffold position lg marker_nr int_low int_high (valid)
+
+map_for_HiC$V1 <- as.factor(map_for_HiC$V1)
+
+#rearrange maps so all positive slope
+map_for_HiC$V3 <- as.numeric(map_for_HiC$V3)
+for (lg in unique(map_for_HiC$V3)){
+  map_temp <- map_for_HiC[map_for_HiC$V3==lg,]
+  if (coef(lm(map_temp$V5~map_temp$V2))[2]<0){
+  map_temp$V5 <- max(map_temp$V5) - map_temp$V5
+  map_temp$V6 <- max(map_temp$V6) - map_temp$V6
+  }
+  if (lg==1){
+    map_rearr <- map_temp
+  } else {
+    map_rearr <- rbind(map_rearr, map_temp)
+  }
+  }
+
+map_rearr$V3 <- as.factor(map_rearr$V3)
+map_rearr$V1 <- as.factor(map_rearr$V1)
+
+
+#https://stackoverflow.com/questions/2547402/how-to-find-the-statistical-mode
+Mode <- function(x, na.rm = FALSE) {
+  if(na.rm){
+    x = x[!is.na(x)]
+  }
+
+  ux <- unique(x)
+  return(ux[which.max(tabulate(match(x, ux)))])
+}
+
+#add the most common scaffold per lg
+lg_to_sc <- as.data.frame(aggregate(V1~V3, FUN=Mode, data=map_rearr))
+colnames(lg_to_sc) <- c("V3", "V8")
+#add to df
+map_rearr <- left_join(map_rearr, lg_to_sc)
+
+write.table(map_rearr, file = file_name_rearr, quote = FALSE, row.names = FALSE)
+
+ggplot(map_rearr) +
+  #geom_point() +
+  geom_linerange(data=map_rearr, mapping=aes(x=V2, ymin=V5, ymax=V6, colour=V1), size=0.2) +
+  geom_point(data=map_rearr, mapping=aes(x=V2, y=V5, colour=V1), size=0.5) +
+  geom_point(data=map_rearr, mapping=aes(x=V2, y=V6, colour=V1), size=0.5) +
+  facet_wrap(~map_rearr$V8, scales="free") +
+  stat_cor(aes(x=V2, y=(V5+V6)/2), method = "spearman", size=2, cor.coef.name = "rho", label.x.npc = "left", label.y.npc = "top") +
+  #scale_colour_manual(values = c("grey14", "red")) +
+  #guides(colour=FALSE) +
+  labs(title = paste(plot_title, "rearr", sep="")) +
+  xlab("Position (bp)") +
+  ylab("Distance (cM)") +
+  theme_classic()
+
+ggsave(paste("figures/marey_", FAMILY, ".pdf", sep = ""), device = "pdf", height = 9, width = 12)
+
+
+#prepare map for chromomap
+#chr(uniq name for chr) start end centromer(optional)
+
+#chromoMap(list(chr_file),list(annotation_file), data_type = "categorical", data_based_color_map = T)
+
+```
+
+```{r ideogram_7C}
+#Use Rideogram instead!!!
+#RIdeogram
+#library(RIdeogram)
+
+FAMILY="7C"
+file_name_rearr=paste(FAMILY, "/OrderMarker_cat_", FAMILY, "_mask13_10run_int_eval3/order_all_int_rearr.txt", sep = "")
+map_rearr <- read.table(file = file_name_rearr, header = T)
+
+map_rearr$V1 <- as.factor(map_rearr$V1)
+map_rearr$V8 <- as.factor(map_rearr$V8)
+
+
+
+#annotation file shows the fields to highlight
+#scaffold and lg
+annotation_file <- unique(map_rearr[,c("V1", "V3", "V8")])
+#add endposition for each lg
+annotation_file <- left_join(annotation_file, as.data.frame(aggregate(V2~V3, FUN=max, data=map_rearr)))
+
+#merged add the length of the smaller scaffold to the larger
+#annotation_file[annotation_file$V1==18 & annotation_file$V3==3, "V2"] <- max(map_rearr[map_rearr$V1=="6", "V2"]) + max(map_rearr[map_rearr$V1=="18", "V2"])
+
+#split set the end coordinates for the second part of scaffold
+annotation_file[annotation_file$V1==5 & annotation_file$V3==38, "V2"] <- annotation_file[annotation_file$V1==5 & annotation_file$V3==38, "V2"] - annotation_file[annotation_file$V1==5 & annotation_file$V3==41, "V2"]
+
+annotation_file$V4 <- 1
+
+#merged start coordinate for the smaller scaffold
+#annotation_file[annotation_file$V1==18 & annotation_file$V3==3, "V4"] <- max(map_rearr[map_rearr$V1=="6", "V2"]) + 1
+
+
+#change name of split chr so it is at the end
+#add level
+levels(annotation_file$V8) <- c(levels(annotation_file$V8),"53") 
+annotation_file[annotation_file$V1==5 & annotation_file$V3==38, "V8"] <- "53"
+
+annotation_file <- annotation_file[,c("V1", "V8", "V4", "V2")]
+#change col names to match the input (feature (scaffold), chr(lg), start, end)
+colnames(annotation_file) <- c("V1", "V2", "V3", "V4")
+annotation_file$V5 <- 0
+
+#add large inversions
+#4?, 8, 24, 33
+# V1 <- as.factor(c(rep(4, 5), rep(8,4), rep(24,4), rep(33,2)))
+# V2 <- as.factor(c(rep(4, 5), rep(8,4), rep(24,4), rep(33,2)))
+# V3 <- c(seq(1, 4722972, 1000000), 
+#         seq(1, 3371462, 1000000),
+#         seq(6964133,max(map_rearr[map_rearr$V1==24,"V2"]),1000000),
+#         seq(1, 1440614, 1000000))
+# V4  <- c(seq(1+500000,4722972, 1000000), 
+#          seq(1+500000, 3371462, 1000000), 3371462, 
+#          seq(6964133 + 500000,max(map_rearr[map_rearr$V1==24,"V2"]),1000000),
+#          seq(1+500000, 1440614, 1000000),1440614)
+# V5 <- -1
+# inv_df <- data.frame(V1, V2, V3, V4, V5)
+# 
+# annotation_file <- rbind(annotation_file, inv_df)
+# 
+#assign value for colouring
+#annotation_file[annotation_file$V1=="6", "V5"] <- 1 #5/27
+#annotation_file[annotation_file$V1=="18", "V5"] <- 2 #21/28
+annotation_file[annotation_file$V1=="5", "V5"] <- 3 #25/18
+# annotation_file[annotation_file$V1=="4" &  annotation_file$V5==-1, "V5"] <- 6 #11/26
+# #annotation_file[annotation_file$V1=="2" &  annotation_file$V5==-1, "V5"] <- 4 #11/26
+# annotation_file[annotation_file$V1=="8" &  annotation_file$V5==-1, "V5"] <- 6 #11/26
+# annotation_file[annotation_file$V1=="24" &  annotation_file$V5==-1, "V5"] <- 6 #11/26
+# annotation_file[annotation_file$V1=="33" &  annotation_file$V5==-1, "V5"] <- 6 #11/26
+
+#annotation_file[annotation_file$V1=="5", "V5"] <- 6 #25/18
+
+#annotation_file[annotation_file$V1=="lg_18", "V5"] <- 5 #split7
+#annotation_file[annotation_file$V1=="lg_24", "V5"] <- 6 #split7
+
+anno_file <- annotation_file[,2:5]
+colnames(anno_file) <- c("Chr", "Start", "End", "Value")
+
+#remove other chr (plot white)
+anno_file2 <- anno_file[anno_file$Value>0,]
+
+
+#[1] " "#7570B3" "#E7298A" "#66A61E" "#E6AB02"
+
+col_4 <- c("#E6AB02")
+#col_6 <- brewer.pal(6, "Dark2")
+
+
+#karyofile is the basic chromosome sizes
+#position of the last marker in each lg
+karyo_file=aggregate(V4~V2, FUN = max, data = annotation_file)
+#last position
+karyo_file$V3 <- karyo_file$V4
+#first position
+karyo_file$V4 <- 1
+colnames(karyo_file) <- c("Chr", "Start", "End")
+karyo_file$Chr <- as.character(karyo_file$Chr)
+
+
+#make a file for marking larger inversions
+# Chr <- c(rep(2, 6), rep(4,10))
+# Type <- c(rep("Inv",16))
+# Shape <- c(rep("triangle",10))
+# Start <- c(seq(26756922, max(map_rearr[map_rearr$V1==2,"V2"]), 1000000), seq(1, 9206906, 1000000))
+# End  <- c(seq(26756922, max(map_rearr[map_rearr$V1==2,"V2"]), 1000000), seq(1, 9206906, 1000000))
+# color <- c(rep("E41A1C",10))
+# 
+# poss_inv <- data.frame(Type, Shape, Chr, Start, End, color)
+# 
+# #label = poss_inv, label_type = "marker",
+
+ideogram(karyotype = karyo_file, overlaid = anno_file2,  colorset1=col_4, output = paste("figures/", FAMILY, "_chromosome.svg"))
+convertSVG(svg = paste("figures/", FAMILY, "_chromosome.svg"), file = paste("figures/", FAMILY, "_chromosome.png"), device = "png")
+
+
+```
+
+```{r 8C_eval1, eval=FALSE}
+FAMILY="8C"
+plot_title=paste("cat_", FAMILY, "_eval1", sep = "")
+file_name=paste(FAMILY, "/OrderMarker_cat_", FAMILY, "_eval1_int/order_all_int.txt", sep = "")
+file_name_mod=paste(FAMILY, "/OrderMarker_cat_", FAMILY, "_eval1_int/order_all_int_mod.txt", sep = "")
+
+map_for_HiC=read.table(file_name)
+
+head(map_for_HiC)
+str(map_for_HiC)
+
+#map_for_HiC=map_for_HiC[(map_for_HiC$V6-map_for_HiC$V5) < 21,]
+#remove uncertain markers
+map_for_HiC$V7 <-1
+#map_for_HiC[(map_for_HiC$V6-map_for_HiC$V5) > 20,]$V7 <- 0
+map_for_HiC$V7 <- as.factor(map_for_HiC$V7)
+
+map_for_HiC$V3 <- as.factor(map_for_HiC$V3)
+map_for_HiC$V1 <- as.factor(map_for_HiC$V1)
+
+#write filtered file, and then use to remove non-inf markers at ends
+#write.table(map_for_HiC, file = file_name_mod, quote = FALSE, row.names = FALSE)
+
+#maps sorted after scaffold
+ggplot(map_for_HiC) +
+  #geom_point() +
+  geom_linerange(data=map_for_HiC, mapping=aes(x=V2, ymin=V5, ymax=V6, colour=V3), size=0.2) +
+  geom_point(data=map_for_HiC, mapping=aes(x=V2, y=V5, colour=V3), size=0.5) +
+  geom_point(data=map_for_HiC, mapping=aes(x=V2, y=V6, colour=V3), size=0.5) +
+  facet_wrap(~map_for_HiC$V1, scales="free") +
+  #scale_colour_manual(values = c("grey14", "red")) +
+  #guides(colour=FALSE) +
+  labs(title = plot_title) +
+  xlab("Position (bp)") +
+  ylab("Distance (cM)") +
+  theme_classic()
+
+#maps sorted after lg
+ggplot(map_for_HiC) +
+  #geom_point() +
+  geom_linerange(data=map_for_HiC, mapping=aes(x=V2, ymin=V5, ymax=V6, colour=V1), size=0.2) +
+  geom_point(data=map_for_HiC, mapping=aes(x=V2, y=V5, colour=V1), size=0.5) +
+  geom_point(data=map_for_HiC, mapping=aes(x=V2, y=V6, colour=V1), size=0.5) +
+  facet_wrap(~map_for_HiC$V3, scales="free") +
+  #scale_colour_manual(values = c("grey14", "red")) +
+  #guides(colour=FALSE) +
+  labs(title = plot_title) +
+  xlab("Position (bp)") +
+  ylab("Distance (cM)") +
+  theme_classic()
+
+
+
+```
+
+```{r 8C_eval2, eval=FALSE}
+FAMILY="8C"
+plot_title=paste("cat_", FAMILY, "_eval2", sep = "")
+file_name=paste(FAMILY, "/OrderMarker_cat_", FAMILY, "_mask13_10run_int/order_all_int.txt", sep = "")
+file_name_mod=paste(FAMILY, "/OrderMarker_cat_", FAMILY, "_mask13_10run_int/order_all_int_mod.txt", sep = "")
+
+map_for_HiC=read.table(file_name)
+
+head(map_for_HiC)
+str(map_for_HiC)
+
+#map_for_HiC=map_for_HiC[(map_for_HiC$V6-map_for_HiC$V5) < 21,]
+#remove uncertain markers
+map_for_HiC$V7 <-1
+#map_for_HiC[(map_for_HiC$V6-map_for_HiC$V5) > 20,]$V7 = 0
+map_for_HiC$V7 <- as.factor(map_for_HiC$V7)
+
+map_for_HiC$V3 <- as.factor(map_for_HiC$V3)
+map_for_HiC$V1 <- as.factor(map_for_HiC$V1)
+
+#write filtered file, and then use to remove non-inf markers at ends
+#write.table(map_for_HiC, file = file_name_mod, quote = FALSE, row.names = FALSE)
+
+#maps sorted after scaffold
+ggplot(map_for_HiC) +
+  #geom_point() +
+  geom_linerange(data=map_for_HiC, mapping=aes(x=V2, ymin=V5, ymax=V6, colour=V3), size=0.2) +
+  geom_point(data=map_for_HiC, mapping=aes(x=V2, y=V5, colour=V3), size=0.5) +
+  geom_point(data=map_for_HiC, mapping=aes(x=V2, y=V6, colour=V3), size=0.5) +
+  facet_wrap(~map_for_HiC$V1, scales="free") +
+  #scale_colour_manual(values = c("grey14", "red")) +
+  #guides(colour=FALSE) +
+  labs(title = plot_title) +
+  xlab("Position (bp)") +
+  ylab("Distance (cM)") +
+  theme_classic()
+
+#maps sorted after lg
+ggplot(map_for_HiC) +
+  #geom_point() +
+  geom_linerange(data=map_for_HiC, mapping=aes(x=V2, ymin=V5, ymax=V6, colour=V1), size=0.2) +
+  geom_point(data=map_for_HiC, mapping=aes(x=V2, y=V5, colour=V1), size=0.5) +
+  geom_point(data=map_for_HiC, mapping=aes(x=V2, y=V6, colour=V1), size=0.5) +
+  facet_wrap(~map_for_HiC$V3, scales="free") +
+  #scale_colour_manual(values = c("grey14", "red")) +
+  #guides(colour=FALSE) +
+  labs(title = plot_title) +
+  xlab("Position (bp)") +
+  ylab("Distance (cM)") +
+  theme_classic()
+
+
+
+```
+
+```{r 8C_eval3, eval=FALSE}
+FAMILY="8C"
+plot_title=paste("cat_", FAMILY, "_eval3", sep = "")
+file_name=paste(FAMILY, "/OrderMarker_cat_", FAMILY, "_mask13_10run_int_eval3/order_all_int.txt", sep = "")
+file_name_mod=paste(FAMILY, "/OrderMarker_cat_", FAMILY, "_mask13_10run_int_eval3/order_all_int_mod.txt", sep = "")
+
+map_for_HiC=read.table(file_name)
+
+head(map_for_HiC)
+str(map_for_HiC)
+
+#map_for_HiC=map_for_HiC[(map_for_HiC$V6-map_for_HiC$V5) < 21,]
+#remove uncertain markers
+map_for_HiC$V7 <-1
+#map_for_HiC[(map_for_HiC$V6-map_for_HiC$V5) > 20,]$V7 = 0
+map_for_HiC$V7 <- as.factor(map_for_HiC$V7)
+
+map_for_HiC$V3 <- as.factor(map_for_HiC$V3)
+map_for_HiC$V1 <- as.factor(map_for_HiC$V1)
+
+#write filtered file, and then use to remove non-inf markers at ends
+#write.table(map_for_HiC, file = file_name_mod, quote = FALSE, row.names = FALSE)
+
+#maps sorted after scaffold
+ggplot(map_for_HiC) +
+  #geom_point() +
+  geom_linerange(data=map_for_HiC, mapping=aes(x=V2, ymin=V5, ymax=V6, colour=V3), size=0.2) +
+  geom_point(data=map_for_HiC, mapping=aes(x=V2, y=V5, colour=V3), size=0.5) +
+  geom_point(data=map_for_HiC, mapping=aes(x=V2, y=V6, colour=V3), size=0.5) +
+  facet_wrap(~map_for_HiC$V1, scales="free") +
+  #scale_colour_manual(values = c("grey14", "red")) +
+  #guides(colour=FALSE) +
+  labs(title = plot_title) +
+  xlab("Position (bp)") +
+  ylab("Distance (cM)") +
+  theme_classic()
+
+#maps sorted after lg
+ggplot(map_for_HiC) +
+  #geom_point() +
+  geom_linerange(data=map_for_HiC, mapping=aes(x=V2, ymin=V5, ymax=V6, colour=V1), size=0.2) +
+  geom_point(data=map_for_HiC, mapping=aes(x=V2, y=V5, colour=V1), size=0.5) +
+  geom_point(data=map_for_HiC, mapping=aes(x=V2, y=V6, colour=V1), size=0.5) +
+  facet_wrap(~map_for_HiC$V3, scales="free") +
+  #scale_colour_manual(values = c("grey14", "red")) +
+  #guides(colour=FALSE) +
+  labs(title = plot_title) +
+  xlab("Position (bp)") +
+  ylab("Distance (cM)") +
+  theme_classic()
+
+
+
+```
+
+
+```{r 8C_plot}
+
+FAMILY="8C"
+plot_title=paste("cat_", FAMILY, "_eval3", sep = "")
+
+file_name_mod=paste(FAMILY, "/OrderMarker_cat_", FAMILY, "_mask13_10run_int_eval3/order_all_int_mod.txt", sep = "")
+
+file_name_rearr=paste(FAMILY, "/OrderMarker_cat_", FAMILY, "_mask13_10run_int_eval3/order_all_int_rearr.txt", sep = "")
+
+map_for_HiC=read.table(file_name_mod, header=T)
+
+
+head(map_for_HiC)
+#  V1       V2 V3   V4 V5 V6 (V7)
+#1  1 32692290  1 1624  0  0  1
+#scaffold position lg marker_nr int_low int_high (valid)
+
+map_for_HiC$V1 <- as.factor(map_for_HiC$V1)
+
+#rearrange maps so all positive slope
+map_for_HiC$V3 <- as.numeric(map_for_HiC$V3)
+for (lg in unique(map_for_HiC$V3)){
+  map_temp <- map_for_HiC[map_for_HiC$V3==lg,]
+  if (coef(lm(map_temp$V5~map_temp$V2))[2]<0){
+  map_temp$V5 <- max(map_temp$V5) - map_temp$V5
+  map_temp$V6 <- max(map_temp$V6) - map_temp$V6
+  }
+  if (lg==1){
+    map_rearr <- map_temp
+  } else {
+    map_rearr <- rbind(map_rearr, map_temp)
+  }
+  }
+
+map_rearr$V3 <- as.factor(map_rearr$V3)
+map_rearr$V1 <- as.factor(map_rearr$V1)
+
+
+#https://stackoverflow.com/questions/2547402/how-to-find-the-statistical-mode
+Mode <- function(x, na.rm = FALSE) {
+  if(na.rm){
+    x = x[!is.na(x)]
+  }
+
+  ux <- unique(x)
+  return(ux[which.max(tabulate(match(x, ux)))])
+}
+
+#add the most common scaffold per lg
+lg_to_sc <- as.data.frame(aggregate(V1~V3, FUN=Mode, data=map_rearr))
+colnames(lg_to_sc) <- c("V3", "V8")
+#add to df
+map_rearr <- left_join(map_rearr, lg_to_sc)
+
+write.table(map_rearr, file = file_name_rearr, quote = FALSE, row.names = FALSE)
+
+ggplot(map_rearr) +
+  #geom_point() +
+  geom_linerange(data=map_rearr, mapping=aes(x=V2, ymin=V5, ymax=V6, colour=V1), size=0.2) +
+  geom_point(data=map_rearr, mapping=aes(x=V2, y=V5, colour=V1), size=0.5) +
+  geom_point(data=map_rearr, mapping=aes(x=V2, y=V6, colour=V1), size=0.5) +
+  facet_wrap(~map_rearr$V8, scales="free") +
+  stat_cor(aes(x=V2, y=(V5+V6)/2), method = "spearman", size=2, cor.coef.name = "rho", label.x.npc = "left", label.y.npc = "top") +
+  #scale_colour_manual(values = c("grey14", "red")) +
+  #guides(colour=FALSE) +
+  labs(title = paste(plot_title, "rearr", sep="")) +
+  xlab("Position (bp)") +
+  ylab("Distance (cM)") +
+  theme_classic()
+
+ggsave(paste("figures/marey_", FAMILY, ".pdf", sep = ""), device = "pdf", height = 9, width = 12)
+
+
+#prepare map for chromomap
+#chr(uniq name for chr) start end centromer(optional)
+
+#chromoMap(list(chr_file),list(annotation_file), data_type = "categorical", data_based_color_map = T)
+
+```
+
+```{r ideogram_8C}
+#Use Rideogram instead!!!
+#RIdeogram
+#library(RIdeogram)
+
+FAMILY="8C"
+file_name_rearr=paste(FAMILY, "/OrderMarker_cat_", FAMILY, "_mask13_10run_int_eval3/order_all_int_rearr.txt", sep = "")
+map_rearr <- read.table(file = file_name_rearr, header = T)
+
+map_rearr$V1 <- as.factor(map_rearr$V1)
+map_rearr$V8 <- as.factor(map_rearr$V8)
+
+
+#annotation file shows the fields to highlight
+#scaffold and lg
+annotation_file <- unique(map_rearr[,c("V1", "V3", "V8")])
+#add endposition for each lg
+annotation_file <- left_join(annotation_file, as.data.frame(aggregate(V2~V3, FUN=max, data=map_rearr)))
+
+#merged add the length of the smaller scaffold to the larger
+#annotation_file[annotation_file$V1==18 & annotation_file$V3==3, "V2"] <- max(map_rearr[map_rearr$V1=="6", "V2"]) + max(map_rearr[map_rearr$V1=="18", "V2"])
+
+#split set the end coordinates for the second part of scaffold
+annotation_file[annotation_file$V1==5 & annotation_file$V3==44, "V2"] <- annotation_file[annotation_file$V1==5 & annotation_file$V3==44, "V2"] - annotation_file[annotation_file$V1==5 & annotation_file$V3==51, "V2"]
+
+annotation_file$V4 <- 1
+
+#merged start coordinate for the smaller scaffold
+#annotation_file[annotation_file$V1==18 & annotation_file$V3==3, "V4"] <- max(map_rearr[map_rearr$V1=="6", "V2"]) + 1
+
+
+#change name of split chr so it is at the end
+#add level
+levels(annotation_file$V8) <- c(levels(annotation_file$V8),"53") 
+annotation_file[annotation_file$V1==5 & annotation_file$V3==44, "V8"] <- "53"
+
+annotation_file <- annotation_file[,c("V1", "V8", "V4", "V2")]
+#change col names to match the input (feature (scaffold), chr(lg), start, end)
+colnames(annotation_file) <- c("V1", "V2", "V3", "V4")
+annotation_file$V5 <- 0
+
+#add large inversions
+#8, 24, (21, 26, 39, 52?)
+# V1 <- as.factor(c(rep(8,4), rep(24,3)))
+# V2 <- as.factor(c(rep(8,4), rep(24,3)))
+# V3 <- c(seq(1, 3371504, 1000000),
+#         seq(8029586, max(map_rearr[map_rearr$V1==24,"V2"]), 1000000))
+# V4  <- c(seq(1+500000, 3371504, 1000000), 3371504, 
+#          seq(8029586+500000, max(map_rearr[map_rearr$V1==24,"V2"]), 1000000), max(map_rearr[map_rearr$V1==24,"V2"]))
+# V5 <- -1
+# inv_df <- data.frame(V1, V2, V3, V4, V5)
+# 
+# annotation_file <- rbind(annotation_file, inv_df)
+# 
+#assign value for colouring
+#annotation_file[annotation_file$V1=="6", "V5"] <- 1 #5/27
+#annotation_file[annotation_file$V1=="18", "V5"] <- 2 #21/28
+annotation_file[annotation_file$V1=="5", "V5"] <- 3 #25/18
+#annotation_file[annotation_file$V1=="4" &  annotation_file$V5==-1, "V5"] <- 4 #11/26
+#annotation_file[annotation_file$V1=="2" &  annotation_file$V5==-1, "V5"] <- 4 #11/26
+# annotation_file[annotation_file$V1=="8" &  annotation_file$V5==-1, "V5"] <- 6 #11/26
+# annotation_file[annotation_file$V1=="24" &  annotation_file$V5==-1, "V5"] <- 6 #11/26
+
+#annotation_file[annotation_file$V1=="5", "V5"] <- 6 #25/18
+
+#annotation_file[annotation_file$V1=="lg_18", "V5"] <- 5 #split7
+#annotation_file[annotation_file$V1=="lg_24", "V5"] <- 6 #split7
+
+anno_file <- annotation_file[,2:5]
+colnames(anno_file) <- c("Chr", "Start", "End", "Value")
+
+#remove other chr (plot white)
+anno_file2 <- anno_file[anno_file$Value>0,]
+
+#brewer.pal(6, "Dark2")
+#[1] "#1B9E77" "#D95F02" "#7570B3" "#E7298A" "#66A61E" "#E6AB02"
+
+col_4 <- c("#E6AB02")
+#col_6 <- c("#1B9E77", "#D95F02", "#7570B3", "#E7298A","#66A61E","#E6AB02")
+
+
+#karyofile is the basic chromosome sizes
+#position of the last marker in each lg
+karyo_file=aggregate(V4~V2, FUN = max, data = annotation_file)
+#last position
+karyo_file$V3 <- karyo_file$V4
+#first position
+karyo_file$V4 <- 1
+colnames(karyo_file) <- c("Chr", "Start", "End")
+karyo_file$Chr <- as.character(karyo_file$Chr)
+
+
+#make a file for marking larger inversions
+# Chr <- c(rep(2, 6), rep(4,10))
+# Type <- c(rep("Inv",16))
+# Shape <- c(rep("triangle",10))
+# Start <- c(seq(26756922, max(map_rearr[map_rearr$V1==2,"V2"]), 1000000), seq(1, 9206906, 1000000))
+# End  <- c(seq(26756922, max(map_rearr[map_rearr$V1==2,"V2"]), 1000000), seq(1, 9206906, 1000000))
+# color <- c(rep("E41A1C",10))
+# 
+# poss_inv <- data.frame(Type, Shape, Chr, Start, End, color)
+
+#label = poss_inv, label_type = "marker",
+
+ideogram(karyotype = karyo_file, overlaid = anno_file2,  colorset1=col_4, output = paste("figures/", FAMILY, "_chromosome.svg"))
+convertSVG(svg = paste("figures/", FAMILY, "_chromosome.svg"), file = paste("figures/", FAMILY, "_chromosome.png"), device = "png")
+
+
+```
+
+
+```{r 9C_eval1, eval=FALSE}
+FAMILY="9C"
+plot_title=paste("cat_", FAMILY, "_eval1", sep = "")
+file_name=paste(FAMILY, "/OrderMarker_cat_", FAMILY, "_eval1_int/order_all_int.txt", sep = "")
+file_name_mod=paste(FAMILY, "/OrderMarker_cat_", FAMILY, "_eval1_int/order_all_int_mod.txt", sep = "")
+
+map_for_HiC=read.table(file_name)
+
+head(map_for_HiC)
+str(map_for_HiC)
+
+#map_for_HiC=map_for_HiC[(map_for_HiC$V6-map_for_HiC$V5) < 21,]
+#remove uncertain markers
+map_for_HiC$V7 <-1
+#map_for_HiC[(map_for_HiC$V6-map_for_HiC$V5) > 20,]$V7 <- 0
+map_for_HiC$V7 <- as.factor(map_for_HiC$V7)
+
+map_for_HiC$V3 <- as.factor(map_for_HiC$V3)
+map_for_HiC$V1 <- as.factor(map_for_HiC$V1)
+
+#write filtered file, and then use to remove non-inf markers at ends
+#write.table(map_for_HiC, file = file_name_mod, quote = FALSE, row.names = FALSE)
+
+#maps sorted after scaffold
+ggplot(map_for_HiC) +
+  #geom_point() +
+  geom_linerange(data=map_for_HiC, mapping=aes(x=V2, ymin=V5, ymax=V6, colour=V3), size=0.2) +
+  geom_point(data=map_for_HiC, mapping=aes(x=V2, y=V5, colour=V3), size=0.5) +
+  geom_point(data=map_for_HiC, mapping=aes(x=V2, y=V6, colour=V3), size=0.5) +
+  facet_wrap(~map_for_HiC$V1, scales="free") +
+  #scale_colour_manual(values = c("grey14", "red")) +
+  #guides(colour=FALSE) +
+  labs(title = plot_title) +
+  xlab("Position (bp)") +
+  ylab("Distance (cM)") +
+  theme_classic()
+
+#maps sorted after lg
+ggplot(map_for_HiC) +
+  #geom_point() +
+  geom_linerange(data=map_for_HiC, mapping=aes(x=V2, ymin=V5, ymax=V6, colour=V1), size=0.2) +
+  geom_point(data=map_for_HiC, mapping=aes(x=V2, y=V5, colour=V1), size=0.5) +
+  geom_point(data=map_for_HiC, mapping=aes(x=V2, y=V6, colour=V1), size=0.5) +
+  facet_wrap(~map_for_HiC$V3, scales="free") +
+  #scale_colour_manual(values = c("grey14", "red")) +
+  #guides(colour=FALSE) +
+  labs(title = plot_title) +
+  xlab("Position (bp)") +
+  ylab("Distance (cM)") +
+  theme_classic()
+
+
+
+```
+
+```{r 9C_eval2, eval=FALSE}
+FAMILY="9C"
+plot_title=paste("cat_", FAMILY, "_eval2", sep = "")
+file_name=paste(FAMILY, "/OrderMarker_cat_", FAMILY, "_mask13_10run_int/order_all_int.txt", sep = "")
+file_name_mod=paste(FAMILY, "/OrderMarker_cat_", FAMILY, "_mask13_10run_int/order_all_int_mod.txt", sep = "")
+
+map_for_HiC=read.table(file_name)
+
+head(map_for_HiC)
+str(map_for_HiC)
+
+#map_for_HiC=map_for_HiC[(map_for_HiC$V6-map_for_HiC$V5) < 21,]
+#remove uncertain markers
+map_for_HiC$V7 <-1
+#map_for_HiC[(map_for_HiC$V6-map_for_HiC$V5) > 20,]$V7 = 0
+map_for_HiC$V7 <- as.factor(map_for_HiC$V7)
+
+map_for_HiC$V3 <- as.factor(map_for_HiC$V3)
+map_for_HiC$V1 <- as.factor(map_for_HiC$V1)
+
+#write filtered file, and then use to remove non-inf markers at ends
+#write.table(map_for_HiC, file = file_name_mod, quote = FALSE, row.names = FALSE)
+
+#maps sorted after scaffold
+ggplot(map_for_HiC) +
+  #geom_point() +
+  geom_linerange(data=map_for_HiC, mapping=aes(x=V2, ymin=V5, ymax=V6, colour=V3), size=0.2) +
+  geom_point(data=map_for_HiC, mapping=aes(x=V2, y=V5, colour=V3), size=0.5) +
+  geom_point(data=map_for_HiC, mapping=aes(x=V2, y=V6, colour=V3), size=0.5) +
+  facet_wrap(~map_for_HiC$V1, scales="free") +
+  #scale_colour_manual(values = c("grey14", "red")) +
+  #guides(colour=FALSE) +
+  labs(title = plot_title) +
+  xlab("Position (bp)") +
+  ylab("Distance (cM)") +
+  theme_classic()
+
+#maps sorted after lg
+ggplot(map_for_HiC) +
+  #geom_point() +
+  geom_linerange(data=map_for_HiC, mapping=aes(x=V2, ymin=V5, ymax=V6, colour=V1), size=0.2) +
+  geom_point(data=map_for_HiC, mapping=aes(x=V2, y=V5, colour=V1), size=0.5) +
+  geom_point(data=map_for_HiC, mapping=aes(x=V2, y=V6, colour=V1), size=0.5) +
+  facet_wrap(~map_for_HiC$V3, scales="free") +
+  #scale_colour_manual(values = c("grey14", "red")) +
+  #guides(colour=FALSE) +
+  labs(title = plot_title) +
+  xlab("Position (bp)") +
+  ylab("Distance (cM)") +
+  theme_classic()
+
+
+
+```
+
+```{r 9C_eval3, eval=FALSE}
+FAMILY="9C"
+plot_title=paste("cat_", FAMILY, "_eval3", sep = "")
+file_name=paste(FAMILY, "/OrderMarker_cat_", FAMILY, "_mask13_10run_int_eval3/order_all_int.txt", sep = "")
+file_name_mod=paste(FAMILY, "/OrderMarker_cat_", FAMILY, "_mask13_10run_int_eval3/order_all_int_mod.txt", sep = "")
+
+map_for_HiC=read.table(file_name)
+
+head(map_for_HiC)
+str(map_for_HiC)
+
+#map_for_HiC=map_for_HiC[(map_for_HiC$V6-map_for_HiC$V5) < 21,]
+#remove uncertain markers
+map_for_HiC$V7 <-1
+#map_for_HiC[(map_for_HiC$V6-map_for_HiC$V5) > 20,]$V7 = 0
+map_for_HiC$V7 <- as.factor(map_for_HiC$V7)
+
+map_for_HiC$V3 <- as.factor(map_for_HiC$V3)
+map_for_HiC$V1 <- as.factor(map_for_HiC$V1)
+
+#write filtered file, and then use to remove non-inf markers at ends
+#write.table(map_for_HiC, file = file_name_mod, quote = FALSE, row.names = FALSE)
+
+#maps sorted after scaffold
+ggplot(map_for_HiC) +
+  #geom_point() +
+  geom_linerange(data=map_for_HiC, mapping=aes(x=V2, ymin=V5, ymax=V6, colour=V3), size=0.2) +
+  geom_point(data=map_for_HiC, mapping=aes(x=V2, y=V5, colour=V3), size=0.5) +
+  geom_point(data=map_for_HiC, mapping=aes(x=V2, y=V6, colour=V3), size=0.5) +
+  facet_wrap(~map_for_HiC$V1, scales="free") +
+  #scale_colour_manual(values = c("grey14", "red")) +
+  #guides(colour=FALSE) +
+  labs(title = plot_title) +
+  xlab("Position (bp)") +
+  ylab("Distance (cM)") +
+  theme_classic()
+
+#maps sorted after lg
+ggplot(map_for_HiC) +
+  #geom_point() +
+  geom_linerange(data=map_for_HiC, mapping=aes(x=V2, ymin=V5, ymax=V6, colour=V1), size=0.2) +
+  geom_point(data=map_for_HiC, mapping=aes(x=V2, y=V5, colour=V1), size=0.5) +
+  geom_point(data=map_for_HiC, mapping=aes(x=V2, y=V6, colour=V1), size=0.5) +
+  facet_wrap(~map_for_HiC$V3, scales="free") +
+  #scale_colour_manual(values = c("grey14", "red")) +
+  #guides(colour=FALSE) +
+  labs(title = plot_title) +
+  xlab("Position (bp)") +
+  ylab("Distance (cM)") +
+  theme_classic()
+
+
+
+```
+
+
+```{r 9C_plot}
+
+FAMILY="9C"
+plot_title=paste("cat_", FAMILY, "_eval3", sep = "")
+
+file_name_mod=paste(FAMILY, "/OrderMarker_cat_", FAMILY, "_mask13_10run_int_eval3/order_all_int_mod.txt", sep = "")
+
+file_name_rearr=paste(FAMILY, "/OrderMarker_cat_", FAMILY, "_mask13_10run_int_eval3/order_all_int_rearr.txt", sep = "")
+
+map_for_HiC=read.table(file_name_mod, header=T)
+
+
+head(map_for_HiC)
+#  V1       V2 V3   V4 V5 V6 (V7)
+#1  1 32692290  1 1624  0  0  1
+#scaffold position lg marker_nr int_low int_high (valid)
+
+map_for_HiC$V1 <- as.factor(map_for_HiC$V1)
+
+#rearrange maps so all positive slope
+map_for_HiC$V3 <- as.numeric(map_for_HiC$V3)
+for (lg in unique(map_for_HiC$V3)){
+  map_temp <- map_for_HiC[map_for_HiC$V3==lg,]
+  if (coef(lm(map_temp$V5~map_temp$V2))[2]<0){
+  map_temp$V5 <- max(map_temp$V5) - map_temp$V5
+  map_temp$V6 <- max(map_temp$V6) - map_temp$V6
+  }
+  if (lg==1){
+    map_rearr <- map_temp
+  } else {
+    map_rearr <- rbind(map_rearr, map_temp)
+  }
+  }
+
+map_rearr$V3 <- as.factor(map_rearr$V3)
+map_rearr$V1 <- as.factor(map_rearr$V1)
+
+
+#https://stackoverflow.com/questions/2547402/how-to-find-the-statistical-mode
+Mode <- function(x, na.rm = FALSE) {
+  if(na.rm){
+    x = x[!is.na(x)]
+  }
+
+  ux <- unique(x)
+  return(ux[which.max(tabulate(match(x, ux)))])
+}
+
+#add the most common scaffold per lg
+lg_to_sc <- as.data.frame(aggregate(V1~V3, FUN=Mode, data=map_rearr))
+colnames(lg_to_sc) <- c("V3", "V8")
+#add to df
+map_rearr <- left_join(map_rearr, lg_to_sc)
+
+write.table(map_rearr, file = file_name_rearr, quote = FALSE, row.names = FALSE)
+
+ggplot(map_rearr) +
+  #geom_point() +
+  geom_linerange(data=map_rearr, mapping=aes(x=V2, ymin=V5, ymax=V6, colour=V1), size=0.2) +
+  geom_point(data=map_rearr, mapping=aes(x=V2, y=V5, colour=V1), size=0.5) +
+  geom_point(data=map_rearr, mapping=aes(x=V2, y=V6, colour=V1), size=0.5) +
+  facet_wrap(~map_rearr$V8, scales="free") +
+  stat_cor(aes(x=V2, y=(V5+V6)/2), method = "spearman", size=2, cor.coef.name = "rho", label.x.npc = "left", label.y.npc = "top") +
+  #scale_colour_manual(values = c("grey14", "red")) +
+  #guides(colour=FALSE) +
+  labs(title = paste(plot_title, "rearr", sep="")) +
+  xlab("Position (bp)") +
+  ylab("Distance (cM)") +
+  theme_classic()
+
+ggsave(paste("figures/marey_", FAMILY, ".pdf", sep = ""), device = "pdf", height = 9, width = 12)
+
+
+#prepare map for chromomap
+#chr(uniq name for chr) start end centromer(optional)
+
+#chromoMap(list(chr_file),list(annotation_file), data_type = "categorical", data_based_color_map = T)
+```
+
+```{r ideogram_9C}
+
+#Use Rideogram instead!!!
+#RIdeogram
+#library(RIdeogram)
+
+FAMILY="9C"
+file_name_rearr=paste(FAMILY, "/OrderMarker_cat_", FAMILY, "_mask13_10run_int_eval3/order_all_int_rearr.txt", sep = "")
+map_rearr <- read.table(file = file_name_rearr, header = T)
+
+map_rearr$V1 <- as.factor(map_rearr$V1)
+map_rearr$V8 <- as.factor(map_rearr$V8)
+
+#annotation file shows the fields to highlight
+#scaffold and lg
+annotation_file <- unique(map_rearr[,c("V1", "V3", "V8")])
+#add endposition for each lg
+annotation_file <- left_join(annotation_file, as.data.frame(aggregate(V2~V3, FUN=max, data=map_rearr)))
+
+#merged; add the length of the smaller scaffold to the larger
+annotation_file[annotation_file$V1==18 & annotation_file$V3==3, "V2"] <- max(map_rearr[map_rearr$V1=="6", "V2"]) + max(map_rearr[map_rearr$V1=="18", "V2"])
+
+annotation_file[annotation_file$V1==45 & annotation_file$V3==17, "V2"] <- max(map_rearr[map_rearr$V1=="45", "V2"]) + max(map_rearr[map_rearr$V1=="5" & map_rearr$V3=="17", "V2"])
+
+#split; set the end coordinates for the second part of scaffold
+annotation_file[annotation_file$V1==5 & annotation_file$V3==33, "V2"] <- annotation_file[annotation_file$V1==5 & annotation_file$V3==33, "V2"] - max(map_rearr[map_rearr$V1=="5" & map_rearr$V3=="17", "V2"])
+
+annotation_file$V4 <- 1
+
+#merged start coordinate for the smaller scaffold
+annotation_file[annotation_file$V1==18 & annotation_file$V3==3, "V4"] <- max(map_rearr[map_rearr$V1=="6", "V2"]) + 1
+annotation_file[annotation_file$V1==45 & annotation_file$V3==17, "V4"] <- max(map_rearr[map_rearr$V1=="5" & map_rearr$V3==17, "V2"]) + 1
+
+
+#change name of split chr so it is at the end
+#add level
+# levels(annotation_file$V8) <- c(levels(annotation_file$V8),"53") 
+# annotation_file[annotation_file$V1==5 & annotation_file$V3==34, "V8"] <- "53"
+
+annotation_file <- annotation_file[,c("V1", "V8", "V4", "V2")]
+#change col names to match the input (feature (scaffold), chr(lg), start, end)
+colnames(annotation_file) <- c("V1", "V2", "V3", "V4")
+annotation_file$V5 <- 0
+
+#add large inversions
+# V1 <- as.factor(c(rep(8,7), rep(21,6), rep(24,7)))
+# V2 <- as.factor(c(rep(8,7), rep(21,6), rep(24,7)))
+# V3 <- c(seq(1, 6456703, 1000000),
+#         seq(5196114,max(map_rearr[map_rearr$V1==21,"V2"]), 1000000),
+#         seq(3944791, max(map_rearr[map_rearr$V1==24,"V2"]), 1000000))
+# V4  <- c(seq(1+500000, 6456703, 1000000), 6456703,
+#          seq(5196114 + 500000,max(map_rearr[map_rearr$V1==21,"V2"]), 1000000),max(map_rearr[map_rearr$V1==21,"V2"]),
+#          seq(3944791+500000, max(map_rearr[map_rearr$V1==24,"V2"]), 1000000))
+# V5 <- -1
+# inv_df <- data.frame(V1, V2, V3, V4, V5)
+# 
+# annotation_file <- rbind(annotation_file, inv_df)
+
+#assign value for colouring
+annotation_file[annotation_file$V1=="6", "V5"] <- 1 
+annotation_file[annotation_file$V1=="18", "V5"] <- 2 
+annotation_file[annotation_file$V1=="5", "V5"] <- 4 
+annotation_file[annotation_file$V1=="45", "V5"] <- 3 
+#annotation_file[annotation_file$V1=="4" &  annotation_file$V5==-1, "V5"] <- 4 
+# annotation_file[annotation_file$V1=="21" &  annotation_file$V5==-1, "V5"] <- 6
+# annotation_file[annotation_file$V1=="8" &  annotation_file$V5==-1, "V5"] <- 6
+# annotation_file[annotation_file$V1=="24" &  annotation_file$V5==-1, "V5"] <- 6
+
+#annotation_file[annotation_file$V1=="5", "V5"] <- 6 #25/18
+
+#annotation_file[annotation_file$V1=="lg_18", "V5"] <- 5 #split7
+#annotation_file[annotation_file$V1=="lg_24", "V5"] <- 6 #split7
+
+anno_file <- annotation_file[,2:5]
+colnames(anno_file) <- c("Chr", "Start", "End", "Value")
+
+#remove other chr (plot white)
+anno_file2 <- anno_file[anno_file$Value>0,]
+
+
+#[1] "#1B9E77" "#D95F02" "#7570B3" "#E7298A" "#66A61E" "#E6AB02"
+
+col_4 <- c("#7570B3", "#D95F02", "#E6AB02", "#E6AB02")
+col_6 <- brewer.pal(6, "Dark2")
+col_9C <- c("#1B9E77","#E7298A","#D95F02", "#E6AB02")
+
+show_col(col_9C)
+
+#karyofile is the basic chromosome sizes
+#position of the last marker in each lg
+karyo_file=aggregate(V4~V2, FUN = max, data = annotation_file)
+#last position
+karyo_file$V3 <- karyo_file$V4
+#first position
+karyo_file$V4 <- 1
+colnames(karyo_file) <- c("Chr", "Start", "End")
+karyo_file$Chr <- as.character(karyo_file$Chr)
+
+
+#make a file for marking larger inversions
+# Chr <- c(rep(2, 6), rep(4,10))
+# Type <- c(rep("Inv",16))
+# Shape <- c(rep("triangle",10))
+# Start <- c(seq(26756922, max(map_rearr[map_rearr$V1==2,"V2"]), 1000000), seq(1, 9206906, 1000000))
+# End  <- c(seq(26756922, max(map_rearr[map_rearr$V1==2,"V2"]), 1000000), seq(1, 9206906, 1000000))
+# color <- c(rep("E41A1C",10))
+# 
+# poss_inv <- data.frame(Type, Shape, Chr, Start, End, color)
+# 
+#label = poss_inv, label_type = "marker",
+
+ideogram(karyotype = karyo_file, overlaid = anno_file2,  colorset1=col_9C, output = paste("figures/", FAMILY, "_chromosome.svg"))
+convertSVG(svg = paste("figures/", FAMILY, "_chromosome.svg"), file = paste("figures/", FAMILY, "_chromosome.png"), device = "png")
+
+
+```
+
+

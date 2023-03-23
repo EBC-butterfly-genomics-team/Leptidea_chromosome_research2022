@@ -1,0 +1,1212 @@
+---
+title: "marey_maps"
+author: "KN"
+date: "16 dec 2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Marey maps
+
+
+#maps with suspicious areas
+```{r intervals_possible_errors, eval=FALSE}
+map_for_HiC=read.table("OrderMarker_eval_filt_swe_29sc_bin_intervals/order_int_all_corr_mod.txt")
+head(map_for_HiC)
+str(map_for_HiC)
+
+map_for_HiC=map_for_HiC[(map_for_HiC$V6-map_for_HiC$V5) < 21,]
+map_for_HiC$V7 <- as.factor(map_for_HiC$V7)
+
+ggplot(map_for_HiC) +
+  #geom_point() +
+  geom_linerange(data=map_for_HiC, mapping=aes(x=V2, ymin=V5, ymax=V6, colour=V7), size=0.2) +
+  geom_point(data=map_for_HiC, mapping=aes(x=V2, y=V5, colour=V7), size=0.5) +
+  geom_point(data=map_for_HiC, mapping=aes(x=V2, y=V6, colour=V7), size=0.5) +
+  facet_wrap(~map_for_HiC$V3, scales="free") +
+  scale_colour_manual(values = c("grey14", "red")) +
+  guides(colour=FALSE) +
+  labs(title = plot_title) +
+  xlab("Position (bp)") +
+  ylab("Distance (cM)") +
+  theme_classic()
+
+```
+
+## My maps
+
+```{r libraries, echo=FALSE, include=FALSE}
+library(ggplot2)
+library(viridis)
+library("tidyr")
+library(dplyr)
+library(chromoMap)
+
+
+```
+
+#LepMap 
+ParentCall with default settings + zlimit=2
+Filtering2 with dataTolerance=0.01, InformativeFamilyLimit=5
+
+#SepChr
+Check assignment of markers to lg with different LodLimit
+```{r check_sep_chrom, eval=F}
+#check that only correct maps summary lines are included, and remove excessive lines
+#awk 'NR<73 {print $0}' maps.summary.txt > maps.summary_mod.txt
+#and make a csv of it to remove risk of empty values being shifted
+
+maps_sum <- read.csv("Test/maps.summary.csv", sep = ";", header = T, fill=T)
+str(maps_sum)
+maps_sum_long <- gather(maps_sum, -LG, key = "lod_lim", value = nr_markers)
+str(maps_sum_long)
+maps_sum_long[is.na(maps_sum_long)] = 0
+
+ggplot(maps_sum_long) +
+  geom_line(aes(LG, nr_markers, colour=lod_lim)) +
+  scale_y_continuous(expand = c(0,0)) +
+  scale_x_continuous(expand = c(0,0)) +
+  coord_cartesian(xlim = c(0,40), ylim = c(0,200)) +
+  xlab(label = "Number of linkage groups") +
+  ylab(label = "Number of markers") +
+  theme(panel.background = element_blank(),
+        axis.line = element_line(size = 0.2, colour="grey"),
+        axis.ticks = element_line(size = 0.2, colour="grey"),
+        axis.text = element_text(size = 10),
+        axis.text.x = element_text(size = 10),
+        axis.title.x = element_text(size = 10),
+        axis.title.y = element_text(size = 10))
+
+  
+ggplot(maps_sum_long) +
+  geom_tile(aes(lod_lim, LG, fill=nr_markers)) +
+  geom_hline(yintercept = 23) +
+  #geom_line(aes(LG, nr_markers, colour=lod_lim)) +
+  #geom_bar(aes(maps_sum_long$LG, maps_sum_long$nr_markers, fill=lod_lim), stat = "identity", position = "dodge") +
+  scale_y_continuous(expand = c(0,0)) +
+  scale_x_discrete(expand = c(0,0)) +
+  coord_cartesian(ylim = c(0,40)) +
+  scale_fill_distiller(type = "seq", na.value = "black", palette = "Greys", direction = 1, limits=c(0,200)) +
+  xlab(label = "LodLimit") +
+  ylab(label = "Number of linkage groups") +
+  theme(panel.background = element_blank(),
+        axis.line = element_line(size = 1),
+        axis.text = element_text(size = 10),
+        axis.text.x = element_text(size = 10, angle = 90),
+        axis.title.x = element_text(size = 10),
+        axis.title.y = element_text(size = 10))
+
+  
+
+```
+
+
+#OrderMarker 
+
+
+
+
+```{r swe_after_first_ordering, echo=FALSE}
+#THIS MUST BE CHANGED!!
+plot_title="swe_after_first_ordering"
+
+#THIS MUST BE CHANGED!!
+map_ordered <- read.table("OrderMarker_12_8_swe/swe_order_all.table", header=T)
+str(map_ordered)
+head(map_ordered)
+
+# map_ordered <- map_ordered %>%
+#   arrange(lg) %>%    # First sort by val. This sort the dataframe but NOT the factor levels
+#   mutate(lg)  # This trick update the factor levels
+
+
+
+head(map_ordered)
+
+
+paste("Result for:", plot_title)
+
+#No markers per scaffold and lg
+#apply(df[c("Q1", "Q2")], 2, table)
+
+#Number of markers in map
+paste("Number of markers in LG:", length(map_ordered$position))
+apply(map_ordered[c("lg")], 2, table)
+apply(map_ordered[c("scaffold")], 2, table)
+
+#maplength
+print("Map length per LG min and max")
+#cbind(aggregate(map_ordered$distance_min, list(map_ordered$lg), max), aggregate(map_ordered$distance_max, list(map_ordered$lg), max))
+aggregate(map_ordered$male_position, list(map_ordered$lg), max)
+paste("Total map length (cM): ",sum(aggregate(map_ordered$male_position, list(map_ordered$lg), max)$x))
+
+paste("Appr recombination rate (cM/Mb):", sum(aggregate(map_ordered$male_position, list(map_ordered$lg), max)$x)/sum(aggregate(map_ordered$position, list(map_ordered$scaffold), max)$x)*1000000)
+
+#total length to get cM divide by nr of offspring then *100
+# paste("Total map length (cM), min:",
+# 100*sum(aggregate(map_ordered$distance_min, list(map_ordered$lg), max)[,2])/90)
+# paste("Total map length (cM), max:",
+# 100*sum(aggregate(map_ordered$distance_max, list(map_ordered$lg), max)[,2])/90)
+
+
+map_ordered$scaffold <- as.factor(map_ordered$scaffold)
+map_ordered$lg <- as.factor(map_ordered$lg)
+
+#plot(map_ordered$lg)
+
+ggplot(map_ordered, aes(map_ordered$scaffold, fill=map_ordered$lg)) +
+  geom_bar() +
+  guides(fill=FALSE) +
+  labs(title = plot_title) +
+  xlab("HiC-scaffold") +
+  theme(panel.background = element_blank(),
+        axis.line = element_line(size = 1),
+        axis.text = element_text(size = 10),
+        axis.title.x = element_text(size = 10),
+        axis.title.y = element_text(size = 10))
+
+
+ggplot(map_ordered, aes(map_ordered$lg, fill=map_ordered$scaffold)) +
+  geom_bar() +
+  scale_fill_discrete(guide_legend(title="Scaffold")) +
+  labs(title = plot_title) +
+  xlab("Linkage group by LepMap3") +
+  theme(panel.background = element_blank(),
+        axis.line = element_line(size = 1),
+        axis.text = element_text(size = 10),
+        axis.title.x = element_text(size = 10),
+        axis.title.y = element_text(size = 10),
+        legend.text = element_text(size = 10))
+
+
+
+
+#in one plot
+ggplot(map_ordered, aes(map_ordered$position, map_ordered$male_position, colour=map_ordered$scaffold)) +
+  geom_point() +
+#  geom_smooth() +
+  facet_wrap(~map_ordered$lg) +
+  guides(colour=FALSE) +
+  labs(title = plot_title) +
+  xlab("Position (bp)") +
+  ylab("Distance (cM)") +
+  theme_classic()
+
+#free axis
+ggplot(map_ordered, aes(map_ordered$position, map_ordered$male_position, colour=map_ordered$scaffold)) +
+  geom_point() +
+#  geom_smooth() +
+  facet_wrap(~map_ordered$lg, scales = "free") +
+  guides(colour=FALSE) +
+  labs(title = plot_title) +
+  xlab("Position (bp)") +
+  ylab("Distance (cM)") +
+  theme_classic()
+
+#in one plot by scaffold
+ggplot(map_ordered, aes(map_ordered$position, map_ordered$male_position, colour=map_ordered$lg)) +
+  geom_point() +
+  facet_wrap(~map_ordered$scaffold) +
+  guides(colour=FALSE) +
+  labs(title = plot_title) +
+  xlab("Position (bp)") +
+  ylab("Distance (cM)") +
+  theme_classic()
+
+#in maporder
+ggplot(map_ordered, aes(as.numeric(rownames(map_ordered)), map_ordered$male_position)) +
+  geom_point(aes(colour=map_ordered$scaffold)) +
+  facet_wrap(~map_ordered$lg, scales = "free") +
+  guides(colour=FALSE) +
+  labs(title = plot_title) +
+  xlab("Map order (row number)") +
+  ylab("Distance (cM)") +
+  theme_classic()
+
+#separate fig for all
+# lgs=unique(map_ordered$lg)
+# for (i in lgs){
+# 
+# marey_title=paste(plot_title,"LG",i)
+# print(ggplot(map_ordered[map_ordered$lg== i, ], aes(map_ordered[map_ordered$lg==i, ]$position, map_ordered[map_ordered$lg==i, ]$distance_min, colour=map_ordered[map_ordered$lg==i, ]$scaffold)) +
+#   geom_point() +
+#   #facet_wrap(~map_lg1$lg) +
+#   scale_colour_discrete(guide_legend(title="Scaffold")) +
+#   xlab("Position (bp)") +
+#   ylab("Distance (cM)") +
+#   theme(panel.background = element_blank(),
+#         axis.line = element_line(size = 1),
+#         axis.text = element_text(size = 10),
+#         axis.title.x = element_text(size = 10),
+#         axis.title.y = element_text(size = 10),
+#         legend.text = element_text(size = 10)) +
+#   labs(title = marey_title))
+# }
+
+
+
+
+```
+
+```{r maps_before_filtering, eval=TRUE, echo=FALSE}
+library(scales)
+
+map=read.table("OrderMarker_swe_int/order_all_int.txt")
+head(map)
+
+map$V4=1
+
+summary(lm(map$V5~map$V2 + map$V1))
+summary(lm(map$V6~map$V2 + map$V1))
+
+
+NN=unique(map$V3)
+MM=1
+
+cl=rainbow(length(MM))
+
+
+# for(lg in NN) {
+#         print(lg)
+#         #png(paste0("marey", lg, ".png"))
+#         ymax = 0
+#         for (m in MM) {
+#                 map_tmp = map[map$V3==lg & map$V4==m,]
+#                 ymax = max(ymax, max(map_tmp$V5))
+#         }
+# 
+#         index = 1
+#         for (m in MM) {
+#                 map_tmp = map[map$V3==lg & map$V4==m,]
+#                 if (glm(map_tmp$V2 ~ map_tmp$V5)$coefficients[2] < 0) {
+#                         map_tmp$V5 = max(map_tmp$V5) - map_tmp$V5
+#                         map_tmp$V6 = max(map_tmp$V6) - map_tmp$V6
+#                 }
+#                 if (index == 1) {
+#                         plot(map_tmp$V2, map_tmp$V5, xlab="Position (Mb)",ylab="Recombination Distance",xaxt="n", main=paste0("LG", lg), col=alpha(cl[index],0.3), pch=20, cex=1.0, ylim=c(0,ymax))
+#                         points(map_tmp$V2, map_tmp$V6, col=alpha(cl[index],0.3), pch=20, cex=1.0)
+#                         arrows(map_tmp$V2, map_tmp$V5, map_tmp$V2, map_tmp$V6, length=0.0, col=alpha(cl[index],0.5),lwd=1.5)
+#                 }
+#                 else {
+#                         points(map_tmp$V2, map_tmp$V5, col=alpha(cl[index],0.3), pch=20, cex=1.0)
+#                         points(map_tmp$V2, map_tmp$V6, col=alpha(cl[index],0.3), pch=20, cex=1.0)
+#                         arrows(map_tmp$V2, map_tmp$V5, map_tmp$V2, map_tmp$V6, length=0.0, col=alpha(cl[index],0.5),lwd=1.5)
+#                 }
+#                 index = index + 1
+#         }
+#         #dev.off()
+# }
+# 
+
+#prune maps
+#remove all uncertainty > 20 
+#map=map[(map$V6-map$V5) < 21,]
+length(map$V1)
+#[1] 2950
+
+for(lg in NN) {
+        print(lg)
+        #png(paste0("marey", lg, ".png"))
+        ymax = 0
+        for (m in MM) {
+                map_tmp = map[map$V3==lg & map$V4==m,]
+                ymax = max(ymax, max(map_tmp$V5))
+        }
+
+        index = 1
+        for (m in MM) {
+                map_tmp = map[map$V3==lg & map$V4==m,]
+                # if (glm(map_tmp$V2 ~ map_tmp$V5)$coefficients[2] < 0) {
+                #         map_tmp$V5 = max(map_tmp$V5) - map_tmp$V5
+                #         map_tmp$V6 = max(map_tmp$V6) - map_tmp$V6
+                # }
+                if (index == 1) {
+                        plot(map_tmp$V2, map_tmp$V5, xlab="Position (Mb)",ylab="Recombination Distance",xaxt="n", main=paste0("LG", lg), col=alpha(cl[index],0.3), pch=20, cex=1.0, ylim=c(0,ymax))
+                        points(map_tmp$V2, map_tmp$V6, col=alpha(cl[index],0.3), pch=20, cex=1.0)
+                        arrows(map_tmp$V2, map_tmp$V5, map_tmp$V2, map_tmp$V6, length=0.0, col=alpha(cl[index],0.5),lwd=1.5)
+                }
+                else {
+                        points(map_tmp$V2, map_tmp$V5, col=alpha(cl[index],0.3), pch=20, cex=1.0)
+                        points(map_tmp$V2, map_tmp$V6, col=alpha(cl[index],0.3), pch=20, cex=1.0)
+                        arrows(map_tmp$V2, map_tmp$V5, map_tmp$V2, map_tmp$V6, length=0.0, col=alpha(cl[index],0.5),lwd=1.5)
+                }
+                index = index + 1
+        }
+        #dev.off()
+}
+
+
+
+```
+
+```{r swe_after_1st_prun, echo=FALSE}
+#THIS MUST BE CHANGED!!
+plot_title="swe_after_1st_prun"
+
+#THIS MUST BE CHANGED!!
+map_ordered <- read.table("OrderMarker_12_8_swe_2/swe_order_all.table", header=T)
+str(map_ordered)
+head(map_ordered)
+
+
+# map_ordered <- map_ordered %>%
+#   arrange(lg) %>%    # First sort by val. This sort the dataframe but NOT the factor levels
+#   mutate(lg)  # This trick update the factor levels
+
+
+
+head(map_ordered)
+
+
+paste("Result for:", plot_title)
+
+#No markers per scaffold and lg
+#apply(df[c("Q1", "Q2")], 2, table)
+
+#Number of markers in map
+paste("Number of markers in LG:", length(map_ordered$position))
+apply(map_ordered[c("lg")], 2, table)
+apply(map_ordered[c("scaffold")], 2, table)
+
+#maplength
+print("Map length per LG min and max")
+#cbind(aggregate(map_ordered$distance_min, list(map_ordered$lg), max), aggregate(map_ordered$distance_max, list(map_ordered$lg), max))
+aggregate(map_ordered$male_position, list(map_ordered$lg), max)
+paste("Total map length (cM): ",sum(aggregate(map_ordered$male_position, list(map_ordered$lg), max)$x))
+
+paste("Appr recombination rate (cM/Mb):", sum(aggregate(map_ordered$male_position, list(map_ordered$lg), max)$x)/sum(aggregate(map_ordered$position, list(map_ordered$scaffold), max)$x)*1000000)
+
+#total length to get cM divide by nr of offspring then *100
+# paste("Total map length (cM), min:",
+# 100*sum(aggregate(map_ordered$distance_min, list(map_ordered$lg), max)[,2])/90)
+# paste("Total map length (cM), max:",
+# 100*sum(aggregate(map_ordered$distance_max, list(map_ordered$lg), max)[,2])/90)
+
+
+map_ordered$scaffold <- as.factor(map_ordered$scaffold)
+map_ordered$lg <- as.factor(map_ordered$lg)
+
+#plot(map_ordered$lg)
+
+ggplot(map_ordered, aes(map_ordered$scaffold, fill=map_ordered$lg)) +
+  geom_bar() +
+  guides(fill=FALSE) +
+  labs(title = plot_title) +
+  xlab("HiC-scaffold") +
+  theme(panel.background = element_blank(),
+        axis.line = element_line(size = 1),
+        axis.text = element_text(size = 10),
+        axis.title.x = element_text(size = 10),
+        axis.title.y = element_text(size = 10))
+
+
+ggplot(map_ordered, aes(map_ordered$lg, fill=map_ordered$scaffold)) +
+  geom_bar() +
+  scale_fill_discrete(guide_legend(title="Scaffold")) +
+  labs(title = plot_title) +
+  xlab("Linkage group by LepMap3") +
+  theme(panel.background = element_blank(),
+        axis.line = element_line(size = 1),
+        axis.text = element_text(size = 10),
+        axis.title.x = element_text(size = 10),
+        axis.title.y = element_text(size = 10),
+        legend.text = element_text(size = 10))
+
+
+
+
+#in one plot
+ggplot(map_ordered, aes(map_ordered$position, map_ordered$male_position, colour=map_ordered$scaffold)) +
+  geom_point() +
+#  geom_smooth() +
+  facet_wrap(~map_ordered$lg) +
+  guides(colour=FALSE) +
+  labs(title = plot_title) +
+  xlab("Position (bp)") +
+  ylab("Distance (cM)") +
+  theme_classic()
+
+#free axis
+ggplot(map_ordered, aes(map_ordered$position, map_ordered$male_position, colour=map_ordered$scaffold)) +
+  geom_point() +
+#  geom_smooth() +
+  facet_wrap(~map_ordered$lg, scales = "free") +
+  guides(colour=FALSE) +
+  labs(title = plot_title) +
+  xlab("Position (bp)") +
+  ylab("Distance (cM)") +
+  theme_classic()
+
+#in one plot by scaffold
+ggplot(map_ordered, aes(map_ordered$position, map_ordered$male_position, colour=map_ordered$lg)) +
+  geom_point() +
+  facet_wrap(~map_ordered$scaffold) +
+  guides(colour=FALSE) +
+  labs(title = plot_title) +
+  xlab("Position (bp)") +
+  ylab("Distance (cM)") +
+  theme_classic()
+
+#in maporder
+ggplot(map_ordered, aes(as.numeric(rownames(map_ordered)), map_ordered$male_position)) +
+  geom_point(aes(colour=map_ordered$scaffold)) +
+  facet_wrap(~map_ordered$lg, scales = "free") +
+  guides(colour=FALSE) +
+  labs(title = plot_title) +
+  xlab("Map order (row number)") +
+  ylab("Distance (cM)") +
+  theme_classic()
+
+#separate fig for all
+# lgs=unique(map_ordered$lg)
+# for (i in lgs){
+# 
+# marey_title=paste(plot_title,"LG",i)
+# print(ggplot(map_ordered[map_ordered$lg== i, ], aes(map_ordered[map_ordered$lg==i, ]$position, map_ordered[map_ordered$lg==i, ]$distance_min, colour=map_ordered[map_ordered$lg==i, ]$scaffold)) +
+#   geom_point() +
+#   #facet_wrap(~map_lg1$lg) +
+#   scale_colour_discrete(guide_legend(title="Scaffold")) +
+#   xlab("Position (bp)") +
+#   ylab("Distance (cM)") +
+#   theme(panel.background = element_blank(),
+#         axis.line = element_line(size = 1),
+#         axis.text = element_text(size = 10),
+#         axis.title.x = element_text(size = 10),
+#         axis.title.y = element_text(size = 10),
+#         legend.text = element_text(size = 10)) +
+#   labs(title = marey_title))
+# }
+
+
+
+
+```
+
+```{r maps_after_1_prun, eval=TRUE, echo=FALSE}
+library(scales)
+
+map=read.table("OrderMarker_swe_int_2/order_all_int.txt")
+head(map)
+
+map$V4=1
+
+summary(lm(map$V5~map$V2 + map$V1))
+summary(lm(map$V6~map$V2 + map$V1))
+
+
+NN=unique(map$V3)
+MM=1
+
+cl=rainbow(length(MM))
+
+
+# for(lg in NN) {
+#         print(lg)
+#         #png(paste0("marey", lg, ".png"))
+#         ymax = 0
+#         for (m in MM) {
+#                 map_tmp = map[map$V3==lg & map$V4==m,]
+#                 ymax = max(ymax, max(map_tmp$V5))
+#         }
+# 
+#         index = 1
+#         for (m in MM) {
+#                 map_tmp = map[map$V3==lg & map$V4==m,]
+#                 if (glm(map_tmp$V2 ~ map_tmp$V5)$coefficients[2] < 0) {
+#                         map_tmp$V5 = max(map_tmp$V5) - map_tmp$V5
+#                         map_tmp$V6 = max(map_tmp$V6) - map_tmp$V6
+#                 }
+#                 if (index == 1) {
+#                         plot(map_tmp$V2, map_tmp$V5, xlab="Position (Mb)",ylab="Recombination Distance",xaxt="n", main=paste0("LG", lg), col=alpha(cl[index],0.3), pch=20, cex=1.0, ylim=c(0,ymax))
+#                         points(map_tmp$V2, map_tmp$V6, col=alpha(cl[index],0.3), pch=20, cex=1.0)
+#                         arrows(map_tmp$V2, map_tmp$V5, map_tmp$V2, map_tmp$V6, length=0.0, col=alpha(cl[index],0.5),lwd=1.5)
+#                 }
+#                 else {
+#                         points(map_tmp$V2, map_tmp$V5, col=alpha(cl[index],0.3), pch=20, cex=1.0)
+#                         points(map_tmp$V2, map_tmp$V6, col=alpha(cl[index],0.3), pch=20, cex=1.0)
+#                         arrows(map_tmp$V2, map_tmp$V5, map_tmp$V2, map_tmp$V6, length=0.0, col=alpha(cl[index],0.5),lwd=1.5)
+#                 }
+#                 index = index + 1
+#         }
+#         #dev.off()
+# }
+# 
+
+#prune maps
+#remove all uncertainty > 20 
+#map=map[(map$V6-map$V5) < 21,]
+length(map$V1)
+#[1] 2950
+
+for(lg in NN) {
+        print(lg)
+        #png(paste0("marey", lg, ".png"))
+        ymax = 0
+        for (m in MM) {
+                map_tmp = map[map$V3==lg & map$V4==m,]
+                ymax = max(ymax, max(map_tmp$V5))
+        }
+
+        index = 1
+        for (m in MM) {
+                map_tmp = map[map$V3==lg & map$V4==m,]
+                # if (glm(map_tmp$V2 ~ map_tmp$V5)$coefficients[2] < 0) {
+                #         map_tmp$V5 = max(map_tmp$V5) - map_tmp$V5
+                #         map_tmp$V6 = max(map_tmp$V6) - map_tmp$V6
+                # }
+                if (index == 1) {
+                        plot(map_tmp$V2, map_tmp$V5, xlab="Position (Mb)",ylab="Recombination Distance",xaxt="n", main=paste0("LG", lg), col=alpha(cl[index],0.3), pch=20, cex=1.0, ylim=c(0,ymax))
+                        points(map_tmp$V2, map_tmp$V6, col=alpha(cl[index],0.3), pch=20, cex=1.0)
+                        arrows(map_tmp$V2, map_tmp$V5, map_tmp$V2, map_tmp$V6, length=0.0, col=alpha(cl[index],0.5),lwd=1.5)
+                }
+                else {
+                        points(map_tmp$V2, map_tmp$V5, col=alpha(cl[index],0.3), pch=20, cex=1.0)
+                        points(map_tmp$V2, map_tmp$V6, col=alpha(cl[index],0.3), pch=20, cex=1.0)
+                        arrows(map_tmp$V2, map_tmp$V5, map_tmp$V2, map_tmp$V6, length=0.0, col=alpha(cl[index],0.5),lwd=1.5)
+                }
+                index = index + 1
+        }
+        #dev.off()
+}
+
+
+
+```
+
+```{r maps_after_2_prun, eval=TRUE, echo=FALSE}
+library(scales)
+
+map=read.table("OrderMarker_swe_int_3/order_all_int.txt")
+head(map)
+
+map$V4=1
+
+summary(lm(map$V5~map$V2 + map$V1))
+summary(lm(map$V6~map$V2 + map$V1))
+
+
+NN=unique(map$V3)
+MM=1
+
+cl=rainbow(length(MM))
+
+
+# for(lg in NN) {
+#         print(lg)
+#         #png(paste0("marey", lg, ".png"))
+#         ymax = 0
+#         for (m in MM) {
+#                 map_tmp = map[map$V3==lg & map$V4==m,]
+#                 ymax = max(ymax, max(map_tmp$V5))
+#         }
+# 
+#         index = 1
+#         for (m in MM) {
+#                 map_tmp = map[map$V3==lg & map$V4==m,]
+#                 if (glm(map_tmp$V2 ~ map_tmp$V5)$coefficients[2] < 0) {
+#                         map_tmp$V5 = max(map_tmp$V5) - map_tmp$V5
+#                         map_tmp$V6 = max(map_tmp$V6) - map_tmp$V6
+#                 }
+#                 if (index == 1) {
+#                         plot(map_tmp$V2, map_tmp$V5, xlab="Position (Mb)",ylab="Recombination Distance",xaxt="n", main=paste0("LG", lg), col=alpha(cl[index],0.3), pch=20, cex=1.0, ylim=c(0,ymax))
+#                         points(map_tmp$V2, map_tmp$V6, col=alpha(cl[index],0.3), pch=20, cex=1.0)
+#                         arrows(map_tmp$V2, map_tmp$V5, map_tmp$V2, map_tmp$V6, length=0.0, col=alpha(cl[index],0.5),lwd=1.5)
+#                 }
+#                 else {
+#                         points(map_tmp$V2, map_tmp$V5, col=alpha(cl[index],0.3), pch=20, cex=1.0)
+#                         points(map_tmp$V2, map_tmp$V6, col=alpha(cl[index],0.3), pch=20, cex=1.0)
+#                         arrows(map_tmp$V2, map_tmp$V5, map_tmp$V2, map_tmp$V6, length=0.0, col=alpha(cl[index],0.5),lwd=1.5)
+#                 }
+#                 index = index + 1
+#         }
+#         #dev.off()
+# }
+# 
+
+#prune maps
+#remove all uncertainty > 20 
+#map=map[(map$V6-map$V5) < 21,]
+length(map$V1)
+#[1] 2950
+
+for(lg in NN) {
+        print(lg)
+        #png(paste0("marey", lg, ".png"))
+        ymax = 0
+        for (m in MM) {
+                map_tmp = map[map$V3==lg & map$V4==m,]
+                ymax = max(ymax, max(map_tmp$V5))
+        }
+
+        index = 1
+        for (m in MM) {
+                map_tmp = map[map$V3==lg & map$V4==m,]
+                # if (glm(map_tmp$V2 ~ map_tmp$V5)$coefficients[2] < 0) {
+                #         map_tmp$V5 = max(map_tmp$V5) - map_tmp$V5
+                #         map_tmp$V6 = max(map_tmp$V6) - map_tmp$V6
+                # }
+                if (index == 1) {
+                        plot(map_tmp$V2, map_tmp$V5, xlab="Position (Mb)",ylab="Recombination Distance",xaxt="n", main=paste0("LG", lg), col=alpha(cl[index],0.3), pch=20, cex=1.0, ylim=c(0,ymax))
+                        points(map_tmp$V2, map_tmp$V6, col=alpha(cl[index],0.3), pch=20, cex=1.0)
+                        arrows(map_tmp$V2, map_tmp$V5, map_tmp$V2, map_tmp$V6, length=0.0, col=alpha(cl[index],0.5),lwd=1.5)
+                }
+                else {
+                        points(map_tmp$V2, map_tmp$V5, col=alpha(cl[index],0.3), pch=20, cex=1.0)
+                        points(map_tmp$V2, map_tmp$V6, col=alpha(cl[index],0.3), pch=20, cex=1.0)
+                        arrows(map_tmp$V2, map_tmp$V5, map_tmp$V2, map_tmp$V6, length=0.0, col=alpha(cl[index],0.5),lwd=1.5)
+                }
+                index = index + 1
+        }
+        #dev.off()
+}
+
+
+
+```
+
+```{r after_2nd_prun, eval=FALSE}
+
+plot_title="after_2nd_prun"
+map_for_HiC=read.table("OrderMarker_swe_int_3/order_all_int.txt")
+
+head(map_for_HiC)
+str(map_for_HiC)
+
+map_for_HiC=map_for_HiC[(map_for_HiC$V6-map_for_HiC$V5) < 21,]
+map_for_HiC$V7 <-1
+map_for_HiC$V7 <- as.factor(map_for_HiC$V7)
+
+#maps sorted after scaffold
+ggplot(map_for_HiC) +
+  #geom_point() +
+  geom_linerange(data=map_for_HiC, mapping=aes(x=V2, ymin=V5, ymax=V6, colour=V7), size=0.2) +
+  geom_point(data=map_for_HiC, mapping=aes(x=V2, y=V5, colour=V7), size=0.5) +
+  geom_point(data=map_for_HiC, mapping=aes(x=V2, y=V6, colour=V7), size=0.5) +
+  facet_wrap(~map_for_HiC$V1, scales="free") +
+  scale_colour_manual(values = c("grey14", "red")) +
+  guides(colour=FALSE) +
+  labs(title = plot_title) +
+  xlab("Position (bp)") +
+  ylab("Distance (cM)") +
+  theme_classic()
+
+```
+
+```{r after_50_iter, eval=FALSE}
+
+plot_title="after_50_iter"
+map_for_HiC=read.table("order_int_all_filt.txt")
+
+head(map_for_HiC)
+str(map_for_HiC)
+
+map_for_HiC=map_for_HiC[(map_for_HiC$V6-map_for_HiC$V5) < 21,]
+map_for_HiC$V7 <-1
+map_for_HiC$V7 <- as.factor(map_for_HiC$V7)
+
+#maps sorted after scaffold
+ggplot(map_for_HiC) +
+  #geom_point() +
+  geom_linerange(data=map_for_HiC, mapping=aes(x=V2, ymin=V5, ymax=V6, colour=V7), size=0.2) +
+  geom_point(data=map_for_HiC, mapping=aes(x=V2, y=V5, colour=V7), size=0.5) +
+  geom_point(data=map_for_HiC, mapping=aes(x=V2, y=V6, colour=V7), size=0.5) +
+  facet_wrap(~map_for_HiC$V1, scales="free") +
+  scale_colour_manual(values = c("grey14", "red")) +
+  guides(colour=FALSE) +
+  labs(title = plot_title) +
+  xlab("Position (bp)") +
+  ylab("Distance (cM)") +
+  theme_classic()
+
+```
+
+```{r after_50_iter_noimprov, eval=FALSE}
+
+plot_title="after_50_iter_noimprove"
+map_for_HiC=read.table("order_all_int_noimprove_filt.txt")
+
+head(map_for_HiC)
+str(map_for_HiC)
+
+map_for_HiC=map_for_HiC[(map_for_HiC$V6-map_for_HiC$V5) < 21,]
+map_for_HiC$V7 <-1
+map_for_HiC$V7 <- as.factor(map_for_HiC$V7)
+
+#maps sorted after scaffold
+ggplot(map_for_HiC) +
+  #geom_point() +
+  geom_linerange(data=map_for_HiC, mapping=aes(x=V2, ymin=V5, ymax=V6, colour=V7), size=0.2) +
+  geom_point(data=map_for_HiC, mapping=aes(x=V2, y=V5, colour=V7), size=0.5) +
+  geom_point(data=map_for_HiC, mapping=aes(x=V2, y=V6, colour=V7), size=0.5) +
+  facet_wrap(~map_for_HiC$V1, scales="free") +
+  scale_colour_manual(values = c("grey14", "red")) +
+  guides(colour=FALSE) +
+  labs(title = plot_title) +
+  xlab("Position (bp)") +
+  ylab("Distance (cM)") +
+  theme_classic()
+
+```
+
+```{r after_50_iter_noimprov_poss_inv, eval=FALSE}
+
+plot_title="after_50_iter_noimprove_poss_inv"
+map_for_HiC=read.table("order_all_int_noimprove_filt_poss_inv.txt")
+
+head(map_for_HiC)
+str(map_for_HiC)
+
+map_for_HiC=map_for_HiC[(map_for_HiC$V6-map_for_HiC$V5) < 21,]
+map_for_HiC$V7 <- as.factor(map_for_HiC$V7)
+
+#maps sorted after scaffold
+ggplot(map_for_HiC) +
+  #geom_point() +
+  geom_linerange(data=map_for_HiC, mapping=aes(x=V2, ymin=V5, ymax=V6, colour=V7), size=0.2) +
+  geom_point(data=map_for_HiC, mapping=aes(x=V2, y=V5, colour=V7), size=0.5) +
+  geom_point(data=map_for_HiC, mapping=aes(x=V2, y=V6, colour=V7), size=0.5) +
+  facet_wrap(~map_for_HiC$V1, scales="free") +
+  scale_colour_manual(values = c("grey14", "red")) +
+  guides(colour=FALSE) +
+  labs(title = plot_title) +
+  xlab("Position (bp)") +
+  ylab("Distance (cM)") +
+  theme_classic()
+
+```
+
+```{r maps_after_2_prun, eval=TRUE, echo=FALSE}
+library(scales)
+
+map=read.table("order_all_int_noimprove_filt_poss_inv.txt")
+head(map)
+
+map$V4=1
+
+summary(lm(map$V5~map$V2 + map$V1))
+summary(lm(map$V6~map$V2 + map$V1))
+
+
+NN=unique(map$V3)
+MM=1
+
+cl=rainbow(length(MM))
+
+
+# for(lg in NN) {
+#         print(lg)
+#         #png(paste0("marey", lg, ".png"))
+#         ymax = 0
+#         for (m in MM) {
+#                 map_tmp = map[map$V3==lg & map$V4==m,]
+#                 ymax = max(ymax, max(map_tmp$V5))
+#         }
+# 
+#         index = 1
+#         for (m in MM) {
+#                 map_tmp = map[map$V3==lg & map$V4==m,]
+#                 if (glm(map_tmp$V2 ~ map_tmp$V5)$coefficients[2] < 0) {
+#                         map_tmp$V5 = max(map_tmp$V5) - map_tmp$V5
+#                         map_tmp$V6 = max(map_tmp$V6) - map_tmp$V6
+#                 }
+#                 if (index == 1) {
+#                         plot(map_tmp$V2, map_tmp$V5, xlab="Position (Mb)",ylab="Recombination Distance",xaxt="n", main=paste0("LG", lg), col=alpha(cl[index],0.3), pch=20, cex=1.0, ylim=c(0,ymax))
+#                         points(map_tmp$V2, map_tmp$V6, col=alpha(cl[index],0.3), pch=20, cex=1.0)
+#                         arrows(map_tmp$V2, map_tmp$V5, map_tmp$V2, map_tmp$V6, length=0.0, col=alpha(cl[index],0.5),lwd=1.5)
+#                 }
+#                 else {
+#                         points(map_tmp$V2, map_tmp$V5, col=alpha(cl[index],0.3), pch=20, cex=1.0)
+#                         points(map_tmp$V2, map_tmp$V6, col=alpha(cl[index],0.3), pch=20, cex=1.0)
+#                         arrows(map_tmp$V2, map_tmp$V5, map_tmp$V2, map_tmp$V6, length=0.0, col=alpha(cl[index],0.5),lwd=1.5)
+#                 }
+#                 index = index + 1
+#         }
+#         #dev.off()
+# }
+# 
+
+#prune maps
+#remove all uncertainty > 20 
+#map=map[(map$V6-map$V5) < 21,]
+length(map$V1)
+#[1] 2950
+
+for(lg in NN) {
+        print(lg)
+        #png(paste0("marey", lg, ".png"))
+        ymax = 0
+        for (m in MM) {
+                map_tmp = map[map$V3==lg & map$V4==m,]
+                ymax = max(ymax, max(map_tmp$V5))
+        }
+
+        index = 1
+        for (m in MM) {
+                map_tmp = map[map$V3==lg & map$V4==m,]
+                # if (glm(map_tmp$V2 ~ map_tmp$V5)$coefficients[2] < 0) {
+                #         map_tmp$V5 = max(map_tmp$V5) - map_tmp$V5
+                #         map_tmp$V6 = max(map_tmp$V6) - map_tmp$V6
+                # }
+                if (index == 1) {
+                        plot(map_tmp$V2, map_tmp$V5, xlab="Position (Mb)",ylab="Recombination Distance",xaxt="n", main=paste0("LG", lg), col=alpha(cl[index],0.3), pch=20, cex=1.0, ylim=c(0,ymax))
+                        points(map_tmp$V2, map_tmp$V6, col=alpha(cl[index],0.3), pch=20, cex=1.0)
+                        arrows(map_tmp$V2, map_tmp$V5, map_tmp$V2, map_tmp$V6, length=0.0, col=alpha(cl[index],0.5),lwd=1.5)
+                }
+                else {
+                        points(map_tmp$V2, map_tmp$V5, col=alpha(cl[index],0.3), pch=20, cex=1.0)
+                        points(map_tmp$V2, map_tmp$V6, col=alpha(cl[index],0.3), pch=20, cex=1.0)
+                        arrows(map_tmp$V2, map_tmp$V5, map_tmp$V2, map_tmp$V6, length=0.0, col=alpha(cl[index],0.5),lwd=1.5)
+                }
+                index = index + 1
+        }
+        #dev.off()
+}
+
+
+
+```
+
+```{r after_50_iter_noimprov_poss_inv_new, eval=FALSE}
+
+plot_title="after_50_iter_noimprove_poss_inv_new"
+map_for_HiC=read.table("order_all_int_noimprove_filt_poss_inv_uniq_new.txt")
+
+file_name_rearr="order_all_int_noimprove_filt_poss_inv_uniq_new_rearr.txt"
+  
+head(map_for_HiC)
+str(map_for_HiC)
+
+map_for_HiC=map_for_HiC[(map_for_HiC$V6-map_for_HiC$V5) < 21,]
+map_for_HiC$V7 <- as.factor(map_for_HiC$V7)
+
+#maps sorted after scaffold
+ggplot(map_for_HiC) +
+  #geom_point() +
+  geom_linerange(data=map_for_HiC, mapping=aes(x=V2, ymin=V5, ymax=V6, colour=V7), size=0.2) +
+  geom_point(data=map_for_HiC, mapping=aes(x=V2, y=V5, colour=V7), size=0.5) +
+  geom_point(data=map_for_HiC, mapping=aes(x=V2, y=V6, colour=V7), size=0.5) +
+  facet_wrap(~map_for_HiC$V1, scales="free") +
+  scale_colour_manual(values = c("grey14", "red")) +
+  guides(colour=FALSE) +
+  labs(title = plot_title) +
+  xlab("Position (bp)") +
+  ylab("Distance (cM)") +
+  theme_classic()
+
+
+map_for_HiC$V1 <- as.factor(map_for_HiC$V1)
+
+#rearrange maps so all positive slope
+map_for_HiC$V3 <- as.numeric(map_for_HiC$V3)
+for (lg in unique(map_for_HiC$V3)){
+  map_temp <- map_for_HiC[map_for_HiC$V3==lg,]
+  if (coef(lm(map_temp$V5~map_temp$V2))[2]<0){
+  map_temp$V5 <- max(map_temp$V5) - map_temp$V5
+  map_temp$V6 <- max(map_temp$V6) - map_temp$V6
+  }
+  if (lg==1){
+    map_rearr <- map_temp
+  } else {
+    map_rearr <- rbind(map_rearr, map_temp)
+  }
+  }
+
+map_rearr$V3 <- as.factor(map_rearr$V3)
+map_rearr$V1 <- as.factor(map_rearr$V1)
+
+
+#https://stackoverflow.com/questions/2547402/how-to-find-the-statistical-mode
+Mode <- function(x, na.rm = FALSE) {
+  if(na.rm){
+    x = x[!is.na(x)]
+  }
+
+  ux <- unique(x)
+  return(ux[which.max(tabulate(match(x, ux)))])
+}
+
+#add the most common scaffold per lg
+lg_to_sc <- as.data.frame(aggregate(V1~V3, FUN=Mode, data=map_rearr))
+colnames(lg_to_sc) <- c("V3", "V8")
+#add to df
+map_rearr <- left_join(map_rearr, lg_to_sc)
+
+map_rearr$V7 <- as.integer(map_rearr$V7)
+
+#add colour to merged sc
+map_rearr[map_rearr$V1==5 & map_rearr$V7==1, "V7"]=3
+map_rearr[map_rearr$V1==27 & map_rearr$V7==1, "V7"]=3
+map_rearr[map_rearr$V1==11 & map_rearr$V7==1, "V7"]=4
+map_rearr[map_rearr$V1==26 & map_rearr$V7==1, "V7"]=4
+map_rearr[map_rearr$V1==18 & map_rearr$V7==1, "V7"]=5
+map_rearr[map_rearr$V1==25 & map_rearr$V7==1, "V7"]=5
+map_rearr[map_rearr$V1==21 & map_rearr$V7==1, "V7"]=6
+map_rearr[map_rearr$V1==28 & map_rearr$V7==1, "V7"]=6
+
+map_rearr$V7 <- as.factor(map_rearr$V7)
+
+#lg15 ok remove red col
+map_rearr[map_rearr$V1==15 & map_rearr$V7==2, "V7"]=1
+
+write.table(map_rearr, file = file_name_rearr, quote = FALSE, row.names = FALSE)
+
+map_rearr <- read.table(file_name_rearr, header = T)
+map_rearr$V7 <- as.factor(map_rearr$V7
+                          )
+
+#maps sorted after scaffold
+ggplot(map_rearr) +
+  #geom_point() +
+  geom_linerange(data=map_rearr, mapping=aes(x=V2/1000000, ymin=V5*100/184, ymax=V6*100/184, colour=V7), size=0.2) +
+  geom_point(data=map_rearr, mapping=aes(x=V2/1000000, y=V5*100/184, colour=V7), size=0.5) +
+  geom_point(data=map_rearr, mapping=aes(x=V2/1000000, y=V6*100/184, colour=V7), size=0.5) +
+  facet_wrap(~map_rearr$V8, scales="free") +
+  scale_colour_manual(values = c("grey14", "red", "blue", "light blue", "orange", "dark green")) +
+  guides(colour=FALSE) +
+  labs(title = plot_title) +
+  xlab("Position (Mb)") +
+  ylab("Distance (cM)") +
+  theme_classic()
+
+
+
+
+#maps sorted after scaffold
+ggplot(map_rearr) +
+  #geom_point() +
+  geom_linerange(data=map_rearr, mapping=aes(x=V2, ymin=V5, ymax=V6, colour=V1), size=0.2) +
+  geom_point(data=map_rearr, mapping=aes(x=V2, y=V5, colour=V1), size=0.5) +
+  geom_point(data=map_rearr, mapping=aes(x=V2, y=V6, colour=V1), size=0.5) +
+  facet_wrap(~map_rearr$V3, scales="free") +
+  #scale_colour_manual(values = c("grey14", "red")) +
+  guides(colour=FALSE) +
+  labs(title = plot_title) +
+  xlab("Position (bp)") +
+  ylab("Distance (cM)") +
+  theme_classic()
+
+
+```
+
+```{r chromomap, echo=FALSE}
+#prepare map for chromomap
+#chr(uniq name for chr) start end centromer(optional)
+
+#chromoMap(list(chr_file),list(annotation_file), data_type = "categorical", data_based_color_map = T)
+file_name_rearr="order_all_int_noimprove_filt_poss_inv_uniq_new_rearr.txt"
+
+
+map_rearr <- read.table(file_name_rearr, header = T)
+map_rearr[map_rearr$V1==18,"V1"]=30
+map_rearr[map_rearr$V1==19,"V1"]=18
+map_rearr[map_rearr$V1==30,"V1"]=19
+#chr 23 shifted inv
+map_rearr[map_rearr$V1==23 & map_rearr$V7==1 & map_rearr$V2<6000000, "V7"]=2
+
+#lg15 ok remove red col
+map_rearr[map_rearr$V1==15 & map_rearr$V7==2, "V7"]=1
+
+
+chr_file  <- read.table("chr_length_swe_HiC.txt") #end of chromosome
+chr_file$V3 <- 1 #start of chromosome
+chr_file$V4 <- seq(1,29)
+#correct order
+
+chr_file <- chr_file[,c("V4", "V3", "V2")]
+
+write.table(chr_file, "chr_file.txt", col.names = FALSE, row.names = FALSE, sep = "\t")
+
+#element_name, chr_name, start, end, value, category(optional), 
+annotation_file <- map_rearr[,c("V4", "V1", "V2", "V2", "V7")]
+annotation_file$V2.1 <- annotation_file$V2.1 + 1
+
+write.table(annotation_file, "annotation_file.txt", col.names = FALSE, row.names = FALSE, sep = "\t")
+
+chr_file=read.table(file = "chr_file.txt", sep = "\t")
+chr_file$V1 <- paste("Chr_", chr_file$V1, sep = "")
+
+annotation_file=read.table(file = "annotation_file.txt", sep = "\t")
+annotation_file$V2 <- paste("Chr_", annotation_file$V2, sep = "")
+
+# chromoMap(list(chr_file),list(annotation_file), data_type = "categorical", data_based_color_map = T)
+# chromoMap(list(chr_file),list(annotation_file), interactivity = F, data_type = "categorical", chr_color = "#dddddd", data_based_color_map = T, data_colors = list(c("grey14", "red", "blue", "light blue", "orange", "dark green")))
+# 
+# chromoMap(list(chr_file),list(annotation_file), interactivity = F, data_type = "categorical", chr_color = "#dddddd", data_based_color_map = T, data_colors = list(c("grey14", "red", "blue", "light blue", "orange", "dark green")))
+# 
+# chromoMap(list(chr_file),list(annotation_file), interactivity = F, data_type = "categorical", chr_color = "#dddddd", data_based_color_map = T, data_colors = list(c("grey14", "red", "blue", "light blue", "orange", "dark green")), n_win.factor = 3)
+# 
+# chromoMap(list(chr_file),list(annotation_file), interactivity = F, data_type = "categorical", chr_color = "#dddddd", data_based_color_map = T, data_colors = list(c("grey14", "red", "blue", "light blue", "orange", "dark green")), n_win.factor = 8, chr_length = 1, chr_width = 8)
+# 
+# chromoMap(list(chr_file),list(annotation_file), interactivity = F, data_type = "categorical", chr_color = "#dddddd", data_based_color_map = T, data_colors = list(c("grey14", "red", "grey14", "grey14", "grey14", "grey14")), n_win.factor = 8, chr_length = 1, chr_width = 8, chr_curve = 10)
+
+#good
+chromoMap(list(chr_file),list(annotation_file), interactivity = F, data_type = "categorical", chr_color = "#dddddd", data_based_color_map = T, data_colors = list(c("grey14", "red", "grey14", "grey14", "grey14", "grey14")), n_win.factor = 8, chr_length = 1, chr_width = 10, ch_gap = 4, text_font_size = 12, export.options = T)
+
+
+```
+
+
+```{r swe_5_bin_reorder, echo=FALSE}
+#THIS MUST BE CHANGED!!
+plot_title="swe_5_bin_reorder"
+
+#THIS MUST BE CHANGED!!
+map_ordered <- read.table("order_all.table", header=T)
+str(map_ordered)
+head(map_ordered)
+
+# map_ordered <- map_ordered %>%
+#   arrange(lg) %>%    # First sort by val. This sort the dataframe but NOT the factor levels
+#   mutate(lg)  # This trick update the factor levels
+
+
+
+head(map_ordered)
+
+
+paste("Result for:", plot_title)
+
+#No markers per scaffold and lg
+#apply(df[c("Q1", "Q2")], 2, table)
+
+#Number of markers in map
+paste("Number of markers in LG:", length(map_ordered$position))
+apply(map_ordered[c("lg")], 2, table)
+apply(map_ordered[c("scaffold")], 2, table)
+
+#maplength
+print("Map length per LG min and max")
+#cbind(aggregate(map_ordered$distance_min, list(map_ordered$lg), max), aggregate(map_ordered$distance_max, list(map_ordered$lg), max))
+aggregate(map_ordered$male_position, list(map_ordered$lg), max)
+paste("Total map length (cM): ",sum(aggregate(map_ordered$male_position, list(map_ordered$lg), max)$x))
+
+paste("Appr recombination rate (cM/Mb):", sum(aggregate(map_ordered$male_position, list(map_ordered$lg), max)$x)/sum(aggregate(map_ordered$position, list(map_ordered$scaffold), max)$x)*1000000)
+
+#total length to get cM divide by nr of offspring then *100
+# paste("Total map length (cM), min:",
+# 100*sum(aggregate(map_ordered$distance_min, list(map_ordered$lg), max)[,2])/90)
+# paste("Total map length (cM), max:",
+# 100*sum(aggregate(map_ordered$distance_max, list(map_ordered$lg), max)[,2])/90)
+
+
+map_ordered$scaffold <- as.factor(map_ordered$scaffold)
+map_ordered$lg <- as.factor(map_ordered$lg)
+
+#plot(map_ordered$lg)
+
+ggplot(map_ordered, aes(map_ordered$scaffold, fill=map_ordered$lg)) +
+  geom_bar() +
+  guides(fill=FALSE) +
+  labs(title = plot_title) +
+  xlab("HiC-scaffold") +
+  theme(panel.background = element_blank(),
+        axis.line = element_line(size = 1),
+        axis.text = element_text(size = 10),
+        axis.title.x = element_text(size = 10),
+        axis.title.y = element_text(size = 10))
+
+
+ggplot(map_ordered, aes(map_ordered$lg, fill=map_ordered$scaffold)) +
+  geom_bar() +
+  scale_fill_discrete(guide_legend(title="Scaffold")) +
+  labs(title = plot_title) +
+  xlab("Linkage group by LepMap3") +
+  theme(panel.background = element_blank(),
+        axis.line = element_line(size = 1),
+        axis.text = element_text(size = 10),
+        axis.title.x = element_text(size = 10),
+        axis.title.y = element_text(size = 10),
+        legend.text = element_text(size = 10))
+
+
+
+
+#in one plot
+ggplot(map_ordered, aes(map_ordered$position, map_ordered$male_position, colour=map_ordered$scaffold)) +
+  geom_point() +
+#  geom_smooth() +
+  facet_wrap(~map_ordered$lg) +
+  guides(colour=FALSE) +
+  labs(title = plot_title) +
+  xlab("Position (bp)") +
+  ylab("Distance (cM)") +
+  theme_classic()
+
+#free axis
+ggplot(map_ordered, aes(map_ordered$position, map_ordered$male_position, colour=map_ordered$scaffold)) +
+  geom_point() +
+#  geom_smooth() +
+  facet_wrap(~map_ordered$lg, scales = "free") +
+  guides(colour=FALSE) +
+  labs(title = plot_title) +
+  xlab("Position (bp)") +
+  ylab("Distance (cM)") +
+  theme_classic()
+
+#in one plot by scaffold
+ggplot(map_ordered, aes(map_ordered$position, map_ordered$male_position, colour=map_ordered$lg)) +
+  geom_point() +
+  facet_wrap(~map_ordered$scaffold) +
+  guides(colour=FALSE) +
+  labs(title = plot_title) +
+  xlab("Position (bp)") +
+  ylab("Distance (cM)") +
+  theme_classic()
+
+#in maporder
+ggplot(map_ordered, aes(as.numeric(rownames(map_ordered)), map_ordered$male_position)) +
+  geom_point(aes(colour=map_ordered$scaffold)) +
+  facet_wrap(~map_ordered$lg, scales = "free") +
+  guides(colour=FALSE) +
+  labs(title = plot_title) +
+  xlab("Map order (row number)") +
+  ylab("Distance (cM)") +
+  theme_classic()
+
+#separate fig for all
+# lgs=unique(map_ordered$lg)
+# for (i in lgs){
+# 
+# marey_title=paste(plot_title,"LG",i)
+# print(ggplot(map_ordered[map_ordered$lg== i, ], aes(map_ordered[map_ordered$lg==i, ]$position, map_ordered[map_ordered$lg==i, ]$distance_min, colour=map_ordered[map_ordered$lg==i, ]$scaffold)) +
+#   geom_point() +
+#   #facet_wrap(~map_lg1$lg) +
+#   scale_colour_discrete(guide_legend(title="Scaffold")) +
+#   xlab("Position (bp)") +
+#   ylab("Distance (cM)") +
+#   theme(panel.background = element_blank(),
+#         axis.line = element_line(size = 1),
+#         axis.text = element_text(size = 10),
+#         axis.title.x = element_text(size = 10),
+#         axis.title.y = element_text(size = 10),
+#         legend.text = element_text(size = 10)) +
+#   labs(title = marey_title))
+# }
+
+
+
+
+```
+
+
+
+```{r intervals}
+
+head(map)
+
+ggplot(map, aes(map$V2, map$V5, colour=map$V1)) +
+  geom_point() +
+  facet_wrap(~map$V3) +
+  guides(colour=FALSE) +
+  labs(title = plot_title) +
+  xlab("Position (bp)") +
+  ylab("Distance (cM)") +
+  theme_classic()
+
+```
+
+
+  

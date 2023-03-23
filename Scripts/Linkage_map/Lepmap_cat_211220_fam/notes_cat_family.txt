@@ -1,0 +1,1021 @@
+######################
+#Families
+
+awk 'NR==1' Lepmap_211220_fam/pedigree_cat_zlim.txt | sed 's/\t/\n/g' |uniq -c > list_families_cat.txt
+
+#curate manually
+
+  40 3c9
+  29 8C
+  36 7C
+  37 4C
+  22 7CB
+  26 9C
+
+#use data.call from Lepmap_211220 (only filtered for large scaffolds)
+cut -f1 data.call |uniq -c
+   1 #java ParentCall2 data=./pedigree_cat_zlim.txt posteriorFile=./post_sc removeNonInformative=1 ZLimit=2
+   6 CHR
+1996 HiC_scaffold_1
+2758 HiC_scaffold_2
+1487 HiC_scaffold_3
+1347 HiC_scaffold_4
+1127 HiC_scaffold_5
+1142 HiC_scaffold_6
+ 994 HiC_scaffold_7
+1234 HiC_scaffold_8
+ 958 HiC_scaffold_9
+1011 HiC_scaffold_10
+ 811 HiC_scaffold_11
+1037 HiC_scaffold_12
+1002 HiC_scaffold_13
+ 953 HiC_scaffold_14
+1116 HiC_scaffold_15
+1176 HiC_scaffold_16
+1093 HiC_scaffold_17
+1057 HiC_scaffold_18
+1012 HiC_scaffold_19
+1029 HiC_scaffold_20
+ 989 HiC_scaffold_21
+1006 HiC_scaffold_22
+ 960 HiC_scaffold_23
+ 865 HiC_scaffold_24
+ 987 HiC_scaffold_25
+ 688 HiC_scaffold_26
+ 780 HiC_scaffold_27
+ 883 HiC_scaffold_28
+ 696 HiC_scaffold_29
+ 852 HiC_scaffold_30
+ 953 HiC_scaffold_31
+ 575 HiC_scaffold_32
+ 710 HiC_scaffold_33
+ 717 HiC_scaffold_34
+ 773 HiC_scaffold_35
+ 608 HiC_scaffold_36
+ 536 HiC_scaffold_37
+ 744 HiC_scaffold_38
+ 678 HiC_scaffold_39
+ 637 HiC_scaffold_40
+ 782 HiC_scaffold_41
+ 616 HiC_scaffold_42
+ 477 HiC_scaffold_43
+ 620 HiC_scaffold_44
+ 657 HiC_scaffold_45
+ 539 HiC_scaffold_46
+ 630 HiC_scaffold_47
+ 674 HiC_scaffold_48
+ 375 HiC_scaffold_49
+ 640 HiC_scaffold_50
+ 478 HiC_scaffold_51
+ 686 HiC_scaffold_52
+
+
+awk 'BEGIN{print "#binned markers"}(NR>7){if (prevc != $1 || $2-prevp >= 1000) {++n;prevp=$2;prevc=$1}; print n}' data.call >bin.map
+Karins-MacBook-Pro-3:Lepmap_211220_fam karin$ less bin.map 
+Karins-MacBook-Pro-3:Lepmap_211220_fam karin$ uniq -c bin.map |awk '{print $1}'| sort | uniq -c | sort -gk2
+  66 1
+  93 2
+ 143 3
+ 177 4
+ 220 5
+ 261 6
+ 306 7
+ 365 8
+ 330 9
+ 316 10
+ 306 11
+ 295 12
+ 247 13
+ 217 14
+ 191 15
+ 158 16
+ 128 17
+  97 18
+  76 19
+  58 20
+  47 21
+  39 22
+  33 23
+  25 24
+  14 25
+  12 26
+   9 27
+  13 28
+   6 29
+   6 30
+   5 31
+   2 32
+   5 33
+   4 34
+   5 35
+   2 36
+   4 37
+   3 38
+   5 39
+   2 40
+   2 41
+   2 42
+   1 43
+   1 44
+   1 45
+   1 47
+   1 50
+   1 52
+   1 53
+   1 91
+   1 109
+
+#remove bins with > 18 snps 
+wc -l data.call 
+   47158 data.call
+
+uniq -c bin.map |awk '$1>18 {print $2}' |awk '(NR==FNR){a[$1]=$0} (NR!=FNR) {if ($1 in a) print (FNR-1)}' - bin.map |awk 'NR==FNR{ a[$1]=$0} NR!=FNR {if ((FNR-7) in a)next; print $0}' - data.call > data_filt1.call
+
+wc -l data_filt1.call 
+   37723 data_filt1.call
+
+#run Filtering2
+wc -l data_f.call 
+   34570 data_f.call
+
+#get info on informative markers per family
+awk -f additional_scripts/inf.awk data_f.call > inf.txt
+
+#get informative per family in separate files
+awk '{$1=0};($3>0) {$1=1} {print $1}' inf.txt > inf_markers_3c9_group.map
+awk '{$1=0};($4>0) {$1=1} {print $1}' inf.txt > inf_markers_8C_group.map
+awk '{$1=0};($5>0) {$1=1} {print $1}' inf.txt > inf_markers_7C_group.map
+awk '{$1=0};($6>0) {$1=1} {print $1}' inf.txt > inf_markers_4C_group.map
+awk '{$1=0};($7>0) {$1=1} {print $1}' inf.txt > inf_markers_7CB_group.map
+awk '{$1=0};($8>0) {$1=1} {print $1}' inf.txt > inf_markers_9C_group.map
+
+#run sep chrom for each family
+
+##############
+#Family 3c9
+#check maps
+awk 'NR>6{print $1}' data_f.call |paste - sep_chr_3c9/cat_3c9.7.map | awk '$2>0' |uniq -c |sort -gk3
+   3 HiC_scaffold_44	1
+   6 HiC_scaffold_21	1
+  68 HiC_scaffold_3	1
+  69 HiC_scaffold_1	1
+ 162 HiC_scaffold_4	1
+  60 HiC_scaffold_2	2
+  77 HiC_scaffold_2	2
+   5 HiC_scaffold_6	3
+  20 HiC_scaffold_6	3
+  32 HiC_scaffold_6	3
+  52 HiC_scaffold_18	3
+  62 HiC_scaffold_21	4
+   1 HiC_scaffold_8	5
+   4 HiC_scaffold_8	5
+  20 HiC_scaffold_8	5
+  30 HiC_scaffold_8	5
+  53 HiC_scaffold_25	6
+   1 HiC_scaffold_2	7
+  51 HiC_scaffold_15	7
+  52 HiC_scaffold_14	8
+  11 HiC_scaffold_9	9
+  39 HiC_scaffold_9	9
+  50 HiC_scaffold_16	10
+  50 HiC_scaffold_28	11
+  49 HiC_scaffold_22	12
+  15 HiC_scaffold_12	13
+  33 HiC_scaffold_12	13
+  48 HiC_scaffold_31	14
+   1 HiC_scaffold_42	15
+   4 HiC_scaffold_20	15
+  39 HiC_scaffold_26	15
+   1 HiC_scaffold_19	16
+  41 HiC_scaffold_7	16
+   7 HiC_scaffold_29	17
+  34 HiC_scaffold_29	17
+  39 HiC_scaffold_11	18
+   1 HiC_scaffold_24	19
+  12 HiC_scaffold_24	19
+  26 HiC_scaffold_24	19
+  15 HiC_scaffold_13	20
+  23 HiC_scaffold_13	20
+  38 HiC_scaffold_17	21
+  14 HiC_scaffold_41	22
+  24 HiC_scaffold_41	22
+   7 HiC_scaffold_27	23
+  13 HiC_scaffold_27	23
+  16 HiC_scaffold_27	23
+  16 HiC_scaffold_42	24
+  20 HiC_scaffold_42	24
+   1 HiC_scaffold_10	25
+   1 HiC_scaffold_47	25
+  12 HiC_scaffold_47	25
+  21 HiC_scaffold_47	25
+   3 HiC_scaffold_31	26
+   6 HiC_scaffold_19	26
+  25 HiC_scaffold_19	26
+   1 HiC_scaffold_40	27
+   5 HiC_scaffold_40	27
+  28 HiC_scaffold_40	27
+   2 HiC_scaffold_29	28
+   7 HiC_scaffold_10	28
+  24 HiC_scaffold_10	28
+  10 HiC_scaffold_30	29
+  23 HiC_scaffold_30	29
+   8 HiC_scaffold_20	30
+  24 HiC_scaffold_20	30
+   5 HiC_scaffold_34	31
+  27 HiC_scaffold_34	31
+   1 HiC_scaffold_35	32
+  31 HiC_scaffold_35	32
+  12 HiC_scaffold_39	33
+  20 HiC_scaffold_39	33
+  31 HiC_scaffold_5	34
+   3 HiC_scaffold_44	35
+  27 HiC_scaffold_44	35
+   1 HiC_scaffold_41	36
+  27 HiC_scaffold_46	36
+  28 HiC_scaffold_43	37
+  23 HiC_scaffold_52	38
+  22 HiC_scaffold_36	39
+  22 HiC_scaffold_51	40
+  21 HiC_scaffold_23	41
+  20 HiC_scaffold_32	42
+  20 HiC_scaffold_33	43
+  18 HiC_scaffold_37	44
+   4 HiC_scaffold_5	45
+  11 HiC_scaffold_5	45
+  15 HiC_scaffold_38	46
+   3 HiC_scaffold_49	47
+  12 HiC_scaffold_49	47
+  14 HiC_scaffold_50	48
+  13 HiC_scaffold_48	49
+   1 HiC_scaffold_8	50
+  10 HiC_scaffold_45	50
+   6 HiC_scaffold_5	51
+   6 HiC_scaffold_24	52
+   4 HiC_scaffold_30	53
+   1 HiC_scaffold_40	54
+   3 HiC_scaffold_40	54
+   3 HiC_scaffold_13	55
+   3 HiC_scaffold_24	56
+   1 HiC_scaffold_27	57
+   2 HiC_scaffold_27	57
+   3 HiC_scaffold_35	58
+   3 HiC_scaffold_39	59
+   1 HiC_scaffold_47	60
+   2 HiC_scaffold_47	60
+   1 HiC_scaffold_6	61
+   1 HiC_scaffold_6	61
+   1 HiC_scaffold_8	62
+   1 HiC_scaffold_8	62
+   2 HiC_scaffold_9	63
+   2 HiC_scaffold_10	64
+   2 HiC_scaffold_12	65
+   2 HiC_scaffold_20	66
+   2 HiC_scaffold_34	67
+   2 HiC_scaffold_49	68
+
+
+#lodlim7 50lg 18/6, split 5
+#run join singles to map7
+bash additional_scripts/LepMap3_JoinSingles_cat.sh 3c9 7 10
+
+#filter markers with > 2 matches
+awk 'NR>1 && NF>2 {$1=0}1' 3c9/JoinSingles_map_cat_3c9_7/cat_3c9_7_7.js.map > 3c9/JoinSingles_map_cat_3c9_7/map_prel_3c9_filt1.map
+
+#split Z
+awk 'NR>7' data_f.call |grep -n "HiC_scaffold_3" |head -n1
+3708:HiC_scaffold_3	438657
+awk '$1==1 && NR>3707 && NR<4929 ' 3c9/JoinSingles_map_cat_3c9_7/map_prel_3c9_filt1.map |wc -l
+     156
+
+
+awk 'NR>7' data_f.call |grep -n "HiC_scaffold_4" |head -n1
+4929:HiC_scaffold_4	61885
+awk '$1==1 && NR>4928 && NR<5864' 3c9/JoinSingles_map_cat_3c9_7/map_prel_3c9_filt1.map |wc -l
+     236
+
+
+awk 'NR>7' data_f.call |grep -n "HiC_scaffold_5" |head -n1
+5864:HiC_scaffold_5	109363
+
+awk '$1==1 && NR>3707 && NR<4929 {$1=51}1' 3c9/JoinSingles_map_cat_3c9_7/map_prel_3c9_filt1.map | awk '$1==1 && NR>4928 && NR<5864 {$1=52}1' > 3c9/JoinSingles_map_cat_3c9_7/map_prel_3c9_filt1_3Z.map
+
+#run ordermarker once to check
+#ckeck maps in r
+#remove uninformative markers at ends
+
+#remove markers from lg by changing to 0 in map
+awk '$7==0 {print $4}' 3c9/OrderMarker_cat_3c9_eval1_int/order_all_int_mod.txt | awk 'NR==FNR {a[$1]=$0} NR!=FNR {if (FNR-1 in a) $1=0;print $0}' - 3c9/JoinSingles_map_cat_3c9_7/map_prel_3c9_filt1_3Z.map > 3c9/JoinSingles_map_cat_3c9_7/map_prel_3c9_filt1_3Z_filt2.map
+
+#run ordermarker 10 iter
+bash additional_scripts/LepMap3_order_cat_10runs.sh 3c9 7 52
+
+#get intervals from best likelihood order
+bash additional_scripts/LepMap3_order_cat_eval2.sh 3c9 52
+
+#check maps in r
+#remove uninformative markers at ends
+
+#Remove markers from order.txt
+for file in $(ls 3c9/OrderMarker_cat_3c9_mask13_10run_int/order_*_intervals.txt);do awk '$7==1 {print $4}' 3c9/OrderMarker_cat_3c9_mask13_10run_int/order_all_int_mod.txt | awk 'NR==FNR {a[$1]=$0} NR!=FNR {if ($1 in a) print $0}' - $file > ${file}_mod;done
+
+#reevaluate with ordermarker
+bash additional_scripts/LepMap3_order_cat_eval3.sh 3c9 52
+
+#check in r
+#make chromoplots with Rideogram
+
+
+
+############
+# 4C
+
+lodlim3 50lg merge 6/18, split 5, lg51 is split sc21
+lodlim4 50lg merge 6/18, split 5, lg51 is split sc21
+lodlim5 50lg merge 6/18, split 5, lg51 is split sc35
+lodlim6 50lg merge 6/18, split 5, lg51 is split sc29
+lodlim7 50lg merge 6/18, split 5, lg51 is split sc29
+
+awk 'NR>6{print $1}' data_f.call |paste - 4C/sep_chr_4C/cat_4C.7.map| awk '$2>0' |uniq -c |sort -gk3
+
+   1 HiC_scaffold_40	1
+   1 HiC_scaffold_44	1
+   1 HiC_scaffold_50	1
+   2 HiC_scaffold_1	1
+   6 HiC_scaffold_21	1
+   6 HiC_scaffold_4	1
+  10 HiC_scaffold_1	1
+  10 HiC_scaffold_3	1
+  14 HiC_scaffold_4	1
+  22 HiC_scaffold_4	1
+  23 HiC_scaffold_4	1
+  30 HiC_scaffold_3	1
+  78 HiC_scaffold_4	1
+  91 HiC_scaffold_1	1
+   9 HiC_scaffold_2	2
+  16 HiC_scaffold_2	2
+  31 HiC_scaffold_2	2
+  31 HiC_scaffold_2	2
+  54 HiC_scaffold_2	2
+   2 HiC_scaffold_18	3
+   3 HiC_scaffold_6	3
+   5 HiC_scaffold_6	3
+  15 HiC_scaffold_18	3
+  18 HiC_scaffold_18	3
+  57 HiC_scaffold_6	3
+   4 HiC_scaffold_8	4
+   8 HiC_scaffold_8	4
+  20 HiC_scaffold_8	4
+  30 HiC_scaffold_8	4
+   4 HiC_scaffold_17	5
+  10 HiC_scaffold_17	5
+  44 HiC_scaffold_17	5
+  11 HiC_scaffold_19	6
+  11 HiC_scaffold_19	6
+  30 HiC_scaffold_19	6
+  22 HiC_scaffold_13	7
+  28 HiC_scaffold_13	7
+  49 HiC_scaffold_12	8
+   3 HiC_scaffold_9	9
+   5 HiC_scaffold_9	9
+  40 HiC_scaffold_9	9
+   2 HiC_scaffold_42	10
+  10 HiC_scaffold_7	10
+  10 HiC_scaffold_7	10
+  23 HiC_scaffold_7	10
+  13 HiC_scaffold_22	11
+  32 HiC_scaffold_22	11
+   9 HiC_scaffold_31	12
+  33 HiC_scaffold_31	12
+   1 HiC_scaffold_15	13
+   2 HiC_scaffold_2	13
+   9 HiC_scaffold_15	13
+  10 HiC_scaffold_15	13
+  19 HiC_scaffold_15	13
+  15 HiC_scaffold_10	14
+  26 HiC_scaffold_10	14
+   1 HiC_scaffold_28	15
+   2 HiC_scaffold_28	15
+   2 HiC_scaffold_28	15
+   2 HiC_scaffold_28	15
+   4 HiC_scaffold_28	15
+  13 HiC_scaffold_28	15
+  16 HiC_scaffold_28	15
+   6 HiC_scaffold_30	16
+  34 HiC_scaffold_30	16
+   2 HiC_scaffold_16	17
+   5 HiC_scaffold_16	17
+  31 HiC_scaffold_16	17
+  14 HiC_scaffold_24	18
+  24 HiC_scaffold_24	18
+  37 HiC_scaffold_14	19
+  37 HiC_scaffold_25	20
+  36 HiC_scaffold_11	21
+  15 HiC_scaffold_21	22
+  21 HiC_scaffold_21	22
+   6 HiC_scaffold_5	23
+  29 HiC_scaffold_5	23
+  16 HiC_scaffold_23	24
+  19 HiC_scaffold_23	24
+   1 HiC_scaffold_35	25
+   1 HiC_scaffold_4	25
+   2 HiC_scaffold_35	25
+   7 HiC_scaffold_35	25
+   8 HiC_scaffold_35	25
+  16 HiC_scaffold_35	25
+   1 HiC_scaffold_30	26
+   8 HiC_scaffold_50	26
+  26 HiC_scaffold_50	26
+  34 HiC_scaffold_33	27
+  14 HiC_scaffold_45	28
+  20 HiC_scaffold_45	28
+  14 HiC_scaffold_29	29
+  19 HiC_scaffold_29	29
+   1 HiC_scaffold_36	30
+   8 HiC_scaffold_36	30
+  11 HiC_scaffold_36	30
+  13 HiC_scaffold_36	30
+   7 HiC_scaffold_38	31
+  26 HiC_scaffold_38	31
+   1 HiC_scaffold_2	32
+   3 HiC_scaffold_37	32
+  28 HiC_scaffold_37	32
+   7 HiC_scaffold_51	33
+  25 HiC_scaffold_51	33
+  11 HiC_scaffold_27	34
+  20 HiC_scaffold_27	34
+   1 HiC_scaffold_32	35
+  14 HiC_scaffold_42	35
+  15 HiC_scaffold_42	35
+   4 HiC_scaffold_46	36
+  26 HiC_scaffold_46	36
+   1 HiC_scaffold_40	37
+   4 HiC_scaffold_39	37
+   9 HiC_scaffold_39	37
+  15 HiC_scaffold_39	37
+   1 HiC_scaffold_52	38
+   4 HiC_scaffold_52	38
+  24 HiC_scaffold_52	38
+   3 HiC_scaffold_19	39
+   5 HiC_scaffold_26	39
+   8 HiC_scaffold_26	39
+  12 HiC_scaffold_26	39
+  27 HiC_scaffold_47	40
+   6 HiC_scaffold_5	41
+   9 HiC_scaffold_5	41
+  10 HiC_scaffold_5	41
+  25 HiC_scaffold_49	42
+   2 HiC_scaffold_20	43
+   3 HiC_scaffold_20	43
+  19 HiC_scaffold_20	43
+   7 HiC_scaffold_41	44
+  16 HiC_scaffold_41	44
+   8 HiC_scaffold_48	45
+  15 HiC_scaffold_48	45
+   2 HiC_scaffold_32	46
+   7 HiC_scaffold_32	46
+  12 HiC_scaffold_32	46
+   1 HiC_scaffold_34	47
+   3 HiC_scaffold_34	47
+  14 HiC_scaffold_34	47
+   6 HiC_scaffold_44	48
+  12 HiC_scaffold_44	48
+   1 HiC_scaffold_40	49
+   1 HiC_scaffold_40	49
+   2 HiC_scaffold_40	49
+   3 HiC_scaffold_40	49
+  10 HiC_scaffold_40	49
+  14 HiC_scaffold_43	50
+   8 HiC_scaffold_29	51
+   7 HiC_scaffold_18	52
+   1 HiC_scaffold_21	53
+   5 HiC_scaffold_21	53
+   6 HiC_scaffold_24	54
+   6 HiC_scaffold_28	55
+   6 HiC_scaffold_34	56
+   5 HiC_scaffold_6	57
+   1 HiC_scaffold_51	58
+   4 HiC_scaffold_16	58
+   2 HiC_scaffold_20	59
+   3 HiC_scaffold_20	59
+   5 HiC_scaffold_26	60
+
+
+#run join singles to map7
+bash additional_scripts/LepMap3_JoinSingles_cat.sh 4C 7 10
+
+awk 'NR>1 && NF>2 {$1=0}1' 4C/JoinSingles_map_cat_4C_7/cat_4C_7_7.js.map > 4C/JoinSingles_map_cat_4C_7/map_prel_4C_filt1.map
+
+#split Z
+awk '$1==1 && NR>3707 && NR<4929 {$1=51}1' 4C/JoinSingles_map_cat_4C_7/map_prel_4C_filt1.map | awk '$1==1 && NR>4928 && NR<5864 {$1=52}1' > 4C/JoinSingles_map_cat_4C_7/map_prel_4C_filt1_3Z.map 
+
+#run ordermarkers once
+#check maps in R, mark non-inf for removal
+
+awk '$7==0 {print $4}' 4C/OrderMarker_cat_4C_eval1_int/order_all_int_mod.txt | awk 'NR==FNR {a[$1]=$0} NR!=FNR {if (FNR-1 in a) $1=0;print $0}' - 4C/JoinSingles_map_cat_4C_7/map_prel_4C_filt1_3Z.map > 4C/JoinSingles_map_cat_4C_7/map_prel_4C_filt1_3Z_filt2.map
+
+awk '$7==0 {print $4}' 4C/OrderMarker_cat_4C_eval1_int/order_all_int_mod.txt |wc -l
+     433
+
+#run Ordermarker 10 iter
+bash additional_scripts/LepMap3_order_cat_10runs.sh 4C 7 52
+
+#get intervals from best likelihood order
+bash additional_scripts/LepMap3_order_cat_eval2.sh 4C 52
+
+#check maps in r
+#remove uninformative markers at ends
+
+#Remove markers from order.txt
+for file in $(ls 4C/OrderMarker_cat_4C_mask13_10run_int/order_*_intervals.txt);do awk '$7==1 {print $4}' 4C/OrderMarker_cat_4C_mask13_10run_int/order_all_int_mod.txt | awk 'NR==FNR {a[$1]=$0} NR!=FNR {if ($1 in a) print $0}' - $file > ${file}_mod;done
+
+#reevaluate with ordermarker
+bash additional_scripts/LepMap3_order_cat_eval3.sh 4C 52
+
+check maps in r
+#remove uninformative markers at ends
+
+#Remove markers from order.txt
+for file in $(ls 4C/OrderMarker_cat_4C_mask13_10run_int_eval3/order_*_intervals.txt);do awk '$7==1 {print $4}' 4C/OrderMarker_cat_4C_mask13_10run_int_eval3/order_all_int_mod.txt | awk 'NR==FNR {a[$1]=$0} NR!=FNR {if ($1 in a) print $0}' - $file > ${file}_mod;done
+
+#reorder if any modified
+bash additional_scripts/LepMap3_order_cat_eval4_spec_lg.sh 4C 2
+
+#add reordered lg to map
+awk '$3!=2' 4C/OrderMarker_cat_4C_mask13_10run_int_eval3/order_all_int.txt |cat - 4C/OrderMarker_cat_4C_mask13_10run_int_eval3_mod/order_all_int.txt > 4C/OrderMarker_cat_4C_mask13_10run_int_eval3_mod/order_all_int_compl.txt
+
+#check in r
+#make chromoplots with Rideogram
+
+
+
+####################
+# 7C
+
+Lodlim 4 51lg 5 split , lg 52, 53 are parts of sc50
+Lodlim 5 51lg 5 split , lg 52 parts of sc50, lg53 part of 24
+Lodlim 6 51lg 5 split , lg 52 parts of sc50, lg53 part of 24
+Lodlim 7 51lg 5 split , lg 52,53 parts of sc12
+Lodlim 8 51lg splitting up several sc 
+
+
+awk 'NR>6{print $1}' data_f.call |paste - 7C/sep_chr_7C/cat_7C.7.map | awk '$2>0' |uniq -c |sort -gk3
+   1 HiC_scaffold_44	1
+   2 HiC_scaffold_4	1
+   3 HiC_scaffold_44	1
+  81 HiC_scaffold_3	1
+  91 HiC_scaffold_1	1
+ 145 HiC_scaffold_4	1
+   1 HiC_scaffold_29	2
+   3 HiC_scaffold_2	2
+  67 HiC_scaffold_2	2
+  76 HiC_scaffold_2	2
+   1 HiC_scaffold_22	3
+  74 HiC_scaffold_22	3
+  64 HiC_scaffold_8	4
+  63 HiC_scaffold_6	5
+  61 HiC_scaffold_17	6
+   2 HiC_scaffold_2	7
+  55 HiC_scaffold_15	7
+  57 HiC_scaffold_9	8
+  57 HiC_scaffold_14	9
+  55 HiC_scaffold_18	10
+   1 HiC_scaffold_42	11
+  54 HiC_scaffold_30	11
+  53 HiC_scaffold_13	12
+   1 HiC_scaffold_20	13
+  49 HiC_scaffold_20	13
+   1 HiC_scaffold_42	14
+  43 HiC_scaffold_7	14
+   1 HiC_scaffold_12	15
+   9 HiC_scaffold_12	15
+  32 HiC_scaffold_12	15
+   8 HiC_scaffold_16	16
+  34 HiC_scaffold_16	16
+  42 HiC_scaffold_35	17
+   6 HiC_scaffold_25	18
+  35 HiC_scaffold_25	18
+   4 HiC_scaffold_20	19
+  35 HiC_scaffold_26	19
+  13 HiC_scaffold_28	20
+  26 HiC_scaffold_28	20
+   7 HiC_scaffold_39	21
+  32 HiC_scaffold_39	21
+  10 HiC_scaffold_50	22
+  29 HiC_scaffold_50	22
+   1 HiC_scaffold_24	23
+  11 HiC_scaffold_24	23
+  26 HiC_scaffold_24	23
+  36 HiC_scaffold_10	24
+  36 HiC_scaffold_19	25
+  35 HiC_scaffold_21	26
+  32 HiC_scaffold_36	27
+  15 HiC_scaffold_38	28
+  17 HiC_scaffold_38	28
+  31 HiC_scaffold_40	29
+  15 HiC_scaffold_29	30
+  15 HiC_scaffold_29	30
+  30 HiC_scaffold_34	31
+   8 HiC_scaffold_42	32
+  22 HiC_scaffold_42	32
+  29 HiC_scaffold_27	33
+   4 HiC_scaffold_31	34
+  12 HiC_scaffold_31	34
+  13 HiC_scaffold_31	34
+   9 HiC_scaffold_41	35
+  19 HiC_scaffold_41	35
+  27 HiC_scaffold_11	36
+  26 HiC_scaffold_33	37
+  24 HiC_scaffold_5	38
+  24 HiC_scaffold_45	39
+  23 HiC_scaffold_23	40
+  22 HiC_scaffold_5	41
+   2 HiC_scaffold_44	42
+   5 HiC_scaffold_44	42
+   7 HiC_scaffold_44	42
+   8 HiC_scaffold_44	42
+  22 HiC_scaffold_48	43
+  21 HiC_scaffold_51	44
+  19 HiC_scaffold_32	45
+   7 HiC_scaffold_47	46
+  10 HiC_scaffold_47	46
+  17 HiC_scaffold_52	47
+   1 HiC_scaffold_2	48
+   4 HiC_scaffold_37	48
+   9 HiC_scaffold_37	48
+  14 HiC_scaffold_43	49
+  14 HiC_scaffold_49	50
+  11 HiC_scaffold_46	51
+   1 HiC_scaffold_12	52
+   7 HiC_scaffold_12	52
+   4 HiC_scaffold_24	53
+   4 HiC_scaffold_44	54
+   3 HiC_scaffold_4	55
+   3 HiC_scaffold_22	56
+   3 HiC_scaffold_25	57
+   3 HiC_scaffold_28	58
+   3 HiC_scaffold_31	59
+   3 HiC_scaffold_39	60
+
+
+bash additional_scripts/LepMap3_JoinSingles_cat.sh 7C 7 10
+
+awk 'NR>1 && NF>2 {$1=0}1' 7C/JoinSingles_map_cat_7C_7/cat_7C_7_7.js.map > 7C/JoinSingles_map_cat_7C_7/map_prel_7C_filt1.map
+
+#split Z
+awk '$1==1 && NR>3707 && NR<4929 {$1=52}1' 7C/JoinSingles_map_cat_7C_7/map_prel_7C_filt1.map | awk '$1==1 && NR>4928 && NR<5864 {$1=53}1' > 7C/JoinSingles_map_cat_7C_7/map_prel_7C_filt1_3Z.map 
+
+bash additional_scripts/LepMap3_order_cat_eval1.sh 7C 7 53
+
+#check maps in R, remove non-inf markers
+
+awk '$7==0 {print $4}' 7C/OrderMarker_cat_7C_eval1_int/order_all_int_mod.txt | awk 'NR==FNR {a[$1]=$0} NR!=FNR {if (FNR-1 in a) $1=0;print $0}' - 7C/JoinSingles_map_cat_7C_7/map_prel_7C_filt1_3Z.map > 7C/JoinSingles_map_cat_7C_7/map_prel_7C_filt1_3Z_filt2.map
+
+#run ordermarker 10 iter
+bash additional_scripts/LepMap3_order_cat_10runs.sh 7C 7 53
+bash additional_scripts/LepMap3_order_cat_eval2.sh 7C 53
+
+check maps in r
+#remove uninformative markers at ends
+
+#Remove markers from order.txt
+for file in $(ls 7C/OrderMarker_cat_7C_mask13_10run_int/order_*_intervals.txt);do awk '$7==1 {print $4}' 7C/OrderMarker_cat_7C_mask13_10run_int/order_all_int_mod.txt | awk 'NR==FNR {a[$1]=$0} NR!=FNR {if ($1 in a) print $0}' - $file > ${file}_mod;done
+
+#reevaluate with ordermarker
+bash additional_scripts/LepMap3_order_cat_eval3.sh 7C 53
+
+#check in r
+#make chromoplots with Rideogram
+
+
+
+
+####################
+#7CB
+
+Splits to many, difficult to tell nr of lg, 18/6 in one lg, only one lg with sc5.
+
+
+
+####################
+#8C
+
+
+lodlim 2 50lg lg 51 is split 5
+lodlim 3 50lg lg 51 is split 5
+lodlim 4 49lg lg 50 is split 5, losing sc51
+lodlim 5 49lg lg 50 is split 5, losing sc51
+lodlim 6 49lg lg 50 is split 5, losing sc51
+
+awk 'NR>6{print $1}' data_f.call |paste - 8C/sep_chr_8C/cat_8C.3.map | awk '$2==51 {print NR}' 
+5868
+5875
+5879
+5881
+6121
+6167
+6183
+
+#run join singles with sizelim 10 (exclude the second part of sc5), marker number of scaffold5 6276-6624
+bash additional_scripts/LepMap3_JoinSingles_cat.sh 8C 3 10
+
+#run join singles with sizelim7 include second lg with sc5, lg 51 marker number 5868-6253
+bash additional_scripts/LepMap3_JoinSingles_cat.sh 8C 3 7
+
+#use join singles with sizelim7, 51lg, 5 is split in family 8C
+
+
+awk 'NR>1 && NF>2 {$1=0}1' 8C/JoinSingles_map_cat_8C_3/cat_8C_3_3.js.map > 8C/JoinSingles_map_cat_8C_3/map_prel_8C_filt1.map
+
+#split Z
+awk '$1==1 && NR>3707 && NR<4929 {$1=52}1' 8C/JoinSingles_map_cat_8C_3/map_prel_8C_filt1.map | awk '$1==1 && NR>4928 && NR<5864 {$1=53}1' > 8C/JoinSingles_map_cat_8C_3/map_prel_8C_filt1_3Z.map 
+
+bash additional_scripts/LepMap3_order_cat_eval1.sh 8C 3 53
+
+#check maps in R, remove non-inf markers
+awk '$7==0 {print $4}' 8C/OrderMarker_cat_8C_eval1_int/order_all_int_mod.txt | awk 'NR==FNR {a[$1]=$0} NR!=FNR {if (FNR-1 in a) $1=0;print $0}' - 8C/JoinSingles_map_cat_8C_3/map_prel_8C_filt1_3Z.map > 8C/JoinSingles_map_cat_8C_3/map_prel_8C_filt1_3Z_filt2.map
+
+#run ordermarker 10 iter
+additional_scripts/LepMap3_order_cat_10runs.sh 8C 3 53
+
+bash additional_scripts/LepMap3_order_cat_eval2.sh 8C 53
+
+#check maps in r
+#remove uninformative markers at ends
+
+#Remove markers from order.txt
+for file in $(ls 8C/OrderMarker_cat_8C_mask13_10run_int/order_*_intervals.txt);do awk '$7==1 {print $4}' 8C/OrderMarker_cat_8C_mask13_10run_int/order_all_int_mod.txt | awk 'NR==FNR {a[$1]=$0} NR!=FNR {if ($1 in a) print $0}' - $file > ${file}_mod;done
+
+#reevaluate with ordermarker
+bash additional_scripts/LepMap3_order_cat_eval3.sh 8C 53
+
+
+
+
+##############
+#9C
+
+lodlim 4 50lg merge 6/18, merge 5/45, splits 5, lg 51 split sc1, lg52 split sc25, lg32 1-2 markers from 20 sc
+lodlim 5 50lg merge 6/18, merge 5/45, splits 5, lg 51 split sc1, lg52 split sc49, lg46 1-2 markers from 12 sc
+lodlim 6 hard to tell nr of lg, merge 6/18, merge 5/45, splits 5
+
+awk 'NR>6{print $1}' data_f.call |paste - 9C/sep_chr_9C/cat_9C.5.map | awk '$2>0' |uniq -c |sort -gk3
+
+awk 'NR>6{print $1}' data_f.call |paste - 9C/sep_chr_9C/cat_9C.5.map | awk '$2>0' |uniq -c |sort -gk3
+   2 HiC_scaffold_1	1
+   2 HiC_scaffold_3	1
+   3 HiC_scaffold_3	1
+   3 HiC_scaffold_44	1
+   3 HiC_scaffold_50	1
+   4 HiC_scaffold_4	1
+   6 HiC_scaffold_1	1
+   7 HiC_scaffold_1	1
+   7 HiC_scaffold_4	1
+   9 HiC_scaffold_1	1
+   9 HiC_scaffold_4	1
+  10 HiC_scaffold_1	1
+  11 HiC_scaffold_3	1
+  15 HiC_scaffold_3	1
+  17 HiC_scaffold_3	1
+  24 HiC_scaffold_4	1
+  35 HiC_scaffold_1	1
+  95 HiC_scaffold_4	1
+   3 HiC_scaffold_2	2
+   3 HiC_scaffold_2	2
+   6 HiC_scaffold_2	2
+   9 HiC_scaffold_2	2
+  11 HiC_scaffold_2	2
+  12 HiC_scaffold_2	2
+  20 HiC_scaffold_2	2
+  28 HiC_scaffold_2	2
+  33 HiC_scaffold_2	2
+   2 HiC_scaffold_18	3
+   5 HiC_scaffold_18	3
+   8 HiC_scaffold_6	3
+   9 HiC_scaffold_6	3
+  10 HiC_scaffold_6	3
+  12 HiC_scaffold_18	3
+  21 HiC_scaffold_18	3
+  32 HiC_scaffold_6	3
+   1 HiC_scaffold_2	4
+   2 HiC_scaffold_9	4
+  14 HiC_scaffold_15	4
+  49 HiC_scaffold_15	4
+  15 HiC_scaffold_12	5
+  21 HiC_scaffold_12	5
+  28 HiC_scaffold_12	5
+  21 HiC_scaffold_21	6
+  37 HiC_scaffold_21	6
+   2 HiC_scaffold_17	7
+   3 HiC_scaffold_15	7
+   5 HiC_scaffold_17	7
+   8 HiC_scaffold_17	7
+  11 HiC_scaffold_17	7
+  28 HiC_scaffold_17	7
+   2 HiC_scaffold_23	8
+  24 HiC_scaffold_24	8
+  30 HiC_scaffold_24	8
+   6 HiC_scaffold_14	9
+  49 HiC_scaffold_14	9
+   2 HiC_scaffold_9	10
+  15 HiC_scaffold_40	10
+  36 HiC_scaffold_40	10
+   2 HiC_scaffold_52	11
+  50 HiC_scaffold_52	11
+   1 HiC_scaffold_25	12
+   2 HiC_scaffold_25	12
+   3 HiC_scaffold_25	12
+   4 HiC_scaffold_25	12
+   9 HiC_scaffold_25	12
+  13 HiC_scaffold_25	12
+  19 HiC_scaffold_25	12
+   5 HiC_scaffold_19	13
+   5 HiC_scaffold_19	13
+   6 HiC_scaffold_19	13
+  12 HiC_scaffold_19	13
+  21 HiC_scaffold_19	13
+   4 HiC_scaffold_7	14
+   5 HiC_scaffold_7	14
+   6 HiC_scaffold_7	14
+   9 HiC_scaffold_7	14
+  11 HiC_scaffold_7	14
+  12 HiC_scaffold_7	14
+   3 HiC_scaffold_13	15
+  18 HiC_scaffold_13	15
+  26 HiC_scaffold_13	15
+   1 HiC_scaffold_9	16
+   2 HiC_scaffold_9	16
+   6 HiC_scaffold_9	16
+   6 HiC_scaffold_9	16
+  10 HiC_scaffold_9	16
+  18 HiC_scaffold_9	16
+   1 HiC_scaffold_8	17
+  14 HiC_scaffold_5	17
+  27 HiC_scaffold_45	17
+   2 HiC_scaffold_22	18
+  17 HiC_scaffold_22	18
+  22 HiC_scaffold_22	18
+   9 HiC_scaffold_30	19
+  32 HiC_scaffold_30	19
+  41 HiC_scaffold_34	20
+  11 HiC_scaffold_36	21
+  30 HiC_scaffold_36	21
+   9 HiC_scaffold_16	22
+  31 HiC_scaffold_16	22
+   6 HiC_scaffold_20	23
+  34 HiC_scaffold_20	23
+   8 HiC_scaffold_32	24
+  31 HiC_scaffold_32	24
+   1 HiC_scaffold_40	25
+   6 HiC_scaffold_39	25
+  31 HiC_scaffold_39	25
+  11 HiC_scaffold_41	26
+  27 HiC_scaffold_41	26
+   2 HiC_scaffold_10	27
+   5 HiC_scaffold_10	27
+   7 HiC_scaffold_10	27
+   8 HiC_scaffold_10	27
+  15 HiC_scaffold_10	27
+  18 HiC_scaffold_28	28
+  19 HiC_scaffold_28	28
+   4 HiC_scaffold_31	29
+   4 HiC_scaffold_31	29
+   6 HiC_scaffold_31	29
+  18 HiC_scaffold_31	29
+  13 HiC_scaffold_42	30
+  19 HiC_scaffold_42	30
+   1 HiC_scaffold_47	31
+   4 HiC_scaffold_47	31
+  27 HiC_scaffold_47	31
+   5 HiC_scaffold_29	32
+   7 HiC_scaffold_29	32
+   8 HiC_scaffold_29	32
+  11 HiC_scaffold_29	32
+   1 HiC_scaffold_32	33
+   9 HiC_scaffold_5	33
+  19 HiC_scaffold_5	33
+   8 HiC_scaffold_11	34
+  20 HiC_scaffold_11	34
+  10 HiC_scaffold_26	35
+  18 HiC_scaffold_26	35
+   4 HiC_scaffold_49	36
+   7 HiC_scaffold_49	36
+  17 HiC_scaffold_49	36
+   1 HiC_scaffold_27	37
+   5 HiC_scaffold_27	37
+   6 HiC_scaffold_27	37
+  15 HiC_scaffold_27	37
+   8 HiC_scaffold_33	38
+  19 HiC_scaffold_33	38
+   7 HiC_scaffold_23	39
+  19 HiC_scaffold_23	39
+   1 HiC_scaffold_35	40
+   2 HiC_scaffold_4	40
+   9 HiC_scaffold_35	40
+  11 HiC_scaffold_35	40
+   1 HiC_scaffold_44	41
+   3 HiC_scaffold_44	41
+   6 HiC_scaffold_44	41
+  13 HiC_scaffold_44	41
+   1 HiC_scaffold_3	42
+   2 HiC_scaffold_50	42
+   3 HiC_scaffold_50	42
+  15 HiC_scaffold_50	42
+   6 HiC_scaffold_38	43
+  15 HiC_scaffold_38	43
+   3 HiC_scaffold_46	44
+  16 HiC_scaffold_46	44
+   3 HiC_scaffold_51	45
+   8 HiC_scaffold_51	45
+   8 HiC_scaffold_51	45
+   1 HiC_scaffold_1	46
+   1 HiC_scaffold_1	46
+   1 HiC_scaffold_2	46
+   1 HiC_scaffold_25	46
+   1 HiC_scaffold_35	46
+   1 HiC_scaffold_4	46
+   1 HiC_scaffold_51	46
+   1 HiC_scaffold_52	46
+   1 HiC_scaffold_9	46
+   2 HiC_scaffold_3	46
+   2 HiC_scaffold_48	46
+   2 HiC_scaffold_5	46
+   2 HiC_scaffold_50	46
+   3 HiC_scaffold_37	47
+  12 HiC_scaffold_37	47
+   1 HiC_scaffold_43	48
+  12 HiC_scaffold_43	48
+   1 HiC_scaffold_8	49
+  11 HiC_scaffold_8	49
+   1 HiC_scaffold_48	50
+   5 HiC_scaffold_48	50
+   6 HiC_scaffold_48	50
+   1 HiC_scaffold_1	51
+   9 HiC_scaffold_1	51
+   7 HiC_scaffold_49	52
+   1 HiC_scaffold_2	53
+   2 HiC_scaffold_2	53
+   3 HiC_scaffold_2	53
+   6 HiC_scaffold_13	54
+   6 HiC_scaffold_24	55
+   1 HiC_scaffold_25	56
+   2 HiC_scaffold_25	56
+   3 HiC_scaffold_25	56
+   6 HiC_scaffold_33	57
+   6 HiC_scaffold_38	58
+   5 HiC_scaffold_3	59
+   5 HiC_scaffold_17	60
+
+
+
+awk 'NR>6{print $1}' data_f.call |paste - 9C/sep_chr_9C/cat_9C.5.map | awk '$2==46'
+HiC_scaffold_1	46
+HiC_scaffold_1	46
+HiC_scaffold_2	46
+HiC_scaffold_3	46
+HiC_scaffold_3	46
+HiC_scaffold_4	46
+HiC_scaffold_5	46
+HiC_scaffold_5	46
+HiC_scaffold_9	46
+HiC_scaffold_25	46
+HiC_scaffold_35	46
+HiC_scaffold_48	46
+HiC_scaffold_48	46
+HiC_scaffold_50	46
+HiC_scaffold_50	46
+HiC_scaffold_51	46
+HiC_scaffold_52	46
+
+#remove lg 46, and move lg50 to 46
+
+#run modified Joinsingles scrips
+awk '$1==46 {$1=0}1' 9C/JoinSingles_map_cat_9C_5/cat_9C.5.map |awk '$1==50 {$1=46}1' > 9C/JoinSingles_map_cat_9C_5/cat_9C.5_mod.map
+bash additional_scripts/LepMap3_JoinSingles_cat_9C_OBS_only_this_fam.sh 9C 5 12
+
+awk 'NR>1 && NF>2 {$1=0}1' 9C/JoinSingles_map_cat_9C_5/cat_9C_5_5.js.map > 9C/JoinSingles_map_cat_9C_5/map_prel_9C_filt1.map
+
+#split Z
+awk '$1==1 && NR>3707 && NR<4929 {$1=50}1' 9C/JoinSingles_map_cat_9C_5/map_prel_9C_filt1.map | awk '$1==1 && NR>4928 && NR<5864 {$1=51}1' > 9C/JoinSingles_map_cat_9C_5/map_prel_9C_filt1_3Z.map 
+
+bash additional_scripts/LepMap3_order_cat_eval1.sh 9C 5 51
+
+#check maps in R, remove non-inf markers
+
+awk '$7==0 {print $4}' 9C/OrderMarker_cat_9C_eval1_int/order_all_int_mod.txt | awk 'NR==FNR {a[$1]=$0} NR!=FNR {if (FNR-1 in a) $1=0;print $0}' - 9C/JoinSingles_map_cat_9C_5/map_prel_9C_filt1_3Z.map > 9C/JoinSingles_map_cat_9C_5/map_prel_9C_filt1_3Z_filt2.map
+
+#run ordermarker 10 iter
+bash additional_scripts/LepMap3_order_cat_10runs.sh 9C 5 51
+
+#get intervals from best likelihood order
+bash additional_scripts/LepMap3_order_cat_eval2.sh 9C 51
+
+#check maps in r
+#remove uninformative markers at ends
+
+#Remove markers from order.txt
+for file in $(ls 9C/OrderMarker_cat_9C_mask13_10run_int/order_*_intervals.txt);do awk '$7==1 {print $4}' 9C/OrderMarker_cat_9C_mask13_10run_int/order_all_int_mod.txt | awk 'NR==FNR {a[$1]=$0} NR!=FNR {if ($1 in a) print $0}' - $file > ${file}_mod;done
+
+#reevaluate with ordermarker
+bash additional_scripts/LepMap3_order_cat_eval3.sh 9C 51
+
+

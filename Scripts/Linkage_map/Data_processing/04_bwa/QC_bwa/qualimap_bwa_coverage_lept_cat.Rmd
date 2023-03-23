@@ -1,0 +1,449 @@
+---
+title: "Qualimap_bwa_scaffold_coverage_cat"
+author: "KN"
+date: "18 may 2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Mapping coverage lept all samples noradtag
+Exploring coverage after mapping with bwa mem agaist reference, lept_assembly/P14502_103.FINAL-deduped-nuc.filtered.fasta
+Unfiltered raw bam
+
+
+```{r libraries, echo=FALSE, include=FALSE}
+library(ggplot2)
+library(viridis)
+library("tidyr")
+library(dplyr)
+
+```
+
+
+```{r data, echo=FALSE}
+
+
+qualimap_cov_mean <- read.table("cat/reads_scaffold_59.txt")
+colnames(qualimap_cov_mean) <- c("individual", "scaffold", "length", "reads", "mean", "sd")
+str(qualimap_cov_mean)
+
+#subset red scaffolds
+qualimap_red <- qualimap_cov_mean[qualimap_cov_mean$scaffold<=52, ]
+# 
+# qualimap_extra <- qualimap_cov_mean[qualimap_cov_mean$scaffold<60, ]
+
+# aggregate(coverage_10th[, 3], list(coverage_10th$scaffold), mean)
+# aggregate(qualimap_red$mean, list(qualimap_red$individual), mean)
+# 
+# df1 <- df1 %>% 
+#   group_by(X) %>% 
+#   mutate(Y.new = mean(Y))
+
+#get mean per individual
+qualimap_red <- qualimap_red %>%
+  group_by(individual) %>%
+  mutate(mean_ind = mean(mean))
+
+summary(qualimap_red)
+
+#qualimap_extra <- qualimap_extra[qualimap_extra$scaffold>=30, ]
+#females
+# P10854_132_S156
+# P10854_160_S184
+# P10854_196_S219
+# P14461_143_S139
+# P14461_164_S160
+# P14461_189_S185
+# P10853_132_S62
+# P10853_164_S93
+# P10853_196_S124
+# P14460_111_S11
+# P14460_153_S53
+# P14460_168_S68
+
+
+```
+
+
+```{r plot, echo=FALSE}
+
+plot_title <- "Mapping coverage lept"
+
+#boxplot
+ggplot(qualimap_red, aes(factor(qualimap_red$scaffold), qualimap_red$mean)) +
+  geom_boxplot(aes(fill=factor(qualimap_red$scaffold)), alpha=0.25) +
+  theme(panel.background = element_blank(),
+        axis.line = element_line(size = 1),
+        axis.text = element_text(size = 10),
+        axis.title.x = element_text(size = 10),
+        axis.title.y = element_text(size = 10),
+        legend.position = "none") +
+  labs(title = plot_title) +
+  xlab("HiC-scaffold") +
+  ylab("mean coverage")
+
+#boxplot relative to mean per ind
+ggplot(qualimap_red, aes(factor(qualimap_red$scaffold), 100*qualimap_red$mean/qualimap_red$mean_ind)) +
+  geom_boxplot(aes(fill=factor(qualimap_red$scaffold)), alpha=0.25) +
+  theme(panel.background = element_blank(),
+        axis.line = element_line(size = 1),
+        axis.text = element_text(size = 10),
+        axis.title.x = element_text(size = 10),
+        axis.title.y = element_text(size = 10),
+        legend.position = "none") +
+  xlab("HiC-scaffold") +
+  ylab("mean coverage/mean per individual (%)")
+
+#adultt
+ggplot(qualimap_red[qualimap_red$individual=="P10854_196_S219_L004.sorted",], aes(factor(qualimap_red[qualimap_red$individual=="P10854_196_S219_L004.sorted",]$scaffold), qualimap_red[qualimap_red$individual=="P10854_196_S219_L004.sorted",]$mean)) +
+   geom_bar(stat="identity",fill="green") +
+   theme(panel.background = element_blank()) +
+  labs(title = "Adult cat female (196)") +
+  xlab("HiC-scaffold") +
+  ylab("mean coverage")
+
+
+
+
+#all mean coverage divided by average coverage in the individual
+ggplot(qualimap_red, aes(qualimap_red$individual,  100*qualimap_red$mean/qualimap_red$mean_ind, fill=qualimap_red$individual)) +
+    geom_bar(stat="identity") +
+    facet_wrap(~qualimap_red$scaffold) +
+    theme(panel.background = element_blank(),
+          legend.position = "none",
+          axis.text.x = element_blank(),
+          axis.title.x = element_blank()) +
+    xlab("HiC-scaffold") +
+    ylab("mean coverage/mean coverage per ind (%)")
+
+#all mean coverage
+ggplot(qualimap_red, aes(qualimap_red$individual,  qualimap_red$mean, fill=qualimap_red$individual)) +
+    geom_bar(stat="identity") +
+    facet_wrap(~qualimap_red$scaffold) +
+    theme(panel.background = element_blank(),
+          legend.position = "none",
+          axis.text.x = element_blank(),
+          axis.title.x = element_blank()) +
+    xlab("HiC-scaffold") +
+    ylab("mean coverage")
+
+#density in one plot normalised by mean coverage per ind
+ggplot(qualimap_red, aes(qualimap_red$mean/qualimap_red$mean_ind, group=qualimap_red$scaffold)) +
+  geom_density(aes(fill=factor(qualimap_red$scaffold)), alpha=0.25) +
+  #facet_wrap(~qualimap_red$scaffold) +
+  scale_fill_discrete(name="HiC-scaffold") +
+  theme(panel.background = element_blank(),
+        axis.line = element_line(size = 1)) +
+  xlab("Mean coverage/mean cov per individual") 
+
+##density in one plot normalised by mean coverage per ind
+ggplot(qualimap_red, aes(qualimap_red$mean/qualimap_red$mean_ind, group=qualimap_red$scaffold)) +
+  geom_density(aes(fill=factor(qualimap_red$scaffold)), alpha=0.25) +
+  facet_wrap(~qualimap_red$scaffold) +
+  scale_fill_discrete(name="HiC-scaffold") +
+  theme(panel.background = element_blank(),
+        axis.line = element_line(size = 1),
+        legend.position = "none") +
+  xlab("Mean coverage/mean cov per individual") 
+
+
+
+```
+
+
+```{r list_sex, echo=FALSE}
+
+lept_males <- qualimap_red[qualimap_red$scaffold==1 & qualimap_red$mean>qualimap_red$mean_ind*0.75,]
+
+length(lept_males$individual)
+
+ggplot(lept_males, aes(lept_males$individual,  100*lept_males$mean/lept_males$mean_ind, fill=lept_males$individual)) +
+    geom_bar(stat="identity") +
+    facet_wrap(~lept_males$scaffold) +
+    theme(panel.background = element_blank(),
+          legend.position = "none",
+          axis.text.x = element_blank(),
+          axis.title.x = element_blank()) +
+    labs(title = "Males") +
+    xlab("HiC-scaffold") +
+    ylab("mean coverage/mean coverage per ind (%)")
+
+
+lept_females <- qualimap_red[qualimap_red$scaffold==1 & qualimap_red$mean<qualimap_red$mean_ind*0.75,]
+length(lept_females$individual)
+
+ggplot(lept_females, aes(lept_females$individual,  100*lept_females$mean/lept_females$mean_ind, fill=lept_females$individual)) +
+    geom_bar(stat="identity") +
+    facet_wrap(~lept_females$scaffold) +
+    theme(panel.background = element_blank(),
+          legend.position = "none",
+          axis.text.x = element_blank(),
+          axis.title.x = element_blank()) +
+    labs(title = "Females") +
+    xlab("HiC-scaffold") +
+    ylab("mean coverage/mean coverage per ind (%)")
+
+qualimap_1 <- qualimap_red[qualimap_red$scaffold==1,]
+
+#density
+ggplot(qualimap_1, aes(qualimap_1$mean/qualimap_1$mean_ind, group=qualimap_1$scaffold)) +
+  geom_density(aes(fill=factor(qualimap_1$scaffold)), alpha=0.25) +
+   # facet_wrap(~qualimap_1$scaffold) +
+  scale_fill_discrete(name="HiC-scaffold") +
+  theme(panel.background = element_blank(),
+        axis.line = element_line(size = 1),
+        legend.position = "none") +
+  xlab("Mean coverage/mean cov per individual") 
+
+
+
+
+```
+
+
+
+```{r write, eval=FALSE}
+
+# anti_join(lept_males, lept_males_6, "individual")
+# #returns 0
+# anti_join(lept_females, lept_females_6, "individual")
+# #returns 0
+
+write.table(unique(lept_males$individual), file = "list_lept_males_cat")
+write.table(unique(lept_females$individual), file = "list_lept_females_cat")
+
+
+
+```
+
+```{r data_b2, echo=FALSE}
+
+
+qualimap_cov_mean <- read.table("cat2/reads_scaffold_59.txt")
+colnames(qualimap_cov_mean) <- c("individual", "scaffold", "length", "reads", "mean", "sd")
+str(qualimap_cov_mean)
+
+#subset red scaffolds
+qualimap_red <- qualimap_cov_mean[qualimap_cov_mean$scaffold<=52, ]
+# 
+# qualimap_extra <- qualimap_cov_mean[qualimap_cov_mean$scaffold<60, ]
+
+# aggregate(coverage_10th[, 3], list(coverage_10th$scaffold), mean)
+# aggregate(qualimap_red$mean, list(qualimap_red$individual), mean)
+# 
+# df1 <- df1 %>% 
+#   group_by(X) %>% 
+#   mutate(Y.new = mean(Y))
+
+#get mean per individual
+qualimap_red <- qualimap_red %>%
+  group_by(individual) %>%
+  mutate(mean_ind = mean(mean))
+
+summary(qualimap_red)
+
+#qualimap_extra <- qualimap_extra[qualimap_extra$scaffold>=30, ]
+#females
+# P10854_132_S156
+# P10854_160_S184
+# P10854_196_S219
+# P14461_143_S139
+# P14461_164_S160
+# P14461_189_S185
+# P10853_132_S62
+# P10853_164_S93
+# P10853_196_S124
+# P14460_111_S11
+# P14460_153_S53
+# P14460_168_S68
+
+
+```
+
+
+```{r plot_b2, echo=FALSE}
+
+plot_title <- "Mapping coverage lept"
+
+#boxplot
+ggplot(qualimap_red, aes(factor(qualimap_red$scaffold), qualimap_red$mean)) +
+  geom_boxplot(aes(fill=factor(qualimap_red$scaffold)), alpha=0.25) +
+  theme(panel.background = element_blank(),
+        axis.line = element_line(size = 1),
+        axis.text = element_text(size = 10),
+        axis.title.x = element_text(size = 10),
+        axis.title.y = element_text(size = 10),
+        legend.position = "none") +
+  labs(title = plot_title) +
+  xlab("HiC-scaffold") +
+  ylab("mean coverage")
+
+#boxplot relative to mean per ind
+ggplot(qualimap_red, aes(factor(qualimap_red$scaffold), 100*qualimap_red$mean/qualimap_red$mean_ind)) +
+  geom_boxplot(aes(fill=factor(qualimap_red$scaffold)), alpha=0.25) +
+  theme(panel.background = element_blank(),
+        axis.line = element_line(size = 1),
+        axis.text = element_text(size = 10),
+        axis.title.x = element_text(size = 10),
+        axis.title.y = element_text(size = 10),
+        legend.position = "none") +
+  xlab("HiC-scaffold") +
+  ylab("mean coverage/mean per individual (%)")
+
+#adultt
+ggplot(qualimap_red[qualimap_red$individual=="P10854_196_S219",], aes(factor(qualimap_red[qualimap_red$individual=="P10854_196_S219",]$scaffold), qualimap_red[qualimap_red$individual=="P10854_196_S219",]$mean)) +
+   geom_bar(stat="identity",fill="green") +
+   theme(panel.background = element_blank()) +
+  labs(title = "Adult swe female (196)") +
+  xlab("HiC-scaffold") +
+  ylab("mean coverage")
+
+
+
+
+#all mean coverage divided by average coverage in the individual
+ggplot(qualimap_red, aes(qualimap_red$individual,  100*qualimap_red$mean/qualimap_red$mean_ind, fill=qualimap_red$individual)) +
+    geom_bar(stat="identity") +
+    facet_wrap(~qualimap_red$scaffold) +
+    theme(panel.background = element_blank(),
+          legend.position = "none",
+          axis.text.x = element_blank(),
+          axis.title.x = element_blank()) +
+    xlab("HiC-scaffold") +
+    ylab("mean coverage/mean coverage per ind (%)")
+
+#all mean coverage
+ggplot(qualimap_red, aes(qualimap_red$individual,  qualimap_red$mean, fill=qualimap_red$individual)) +
+    geom_bar(stat="identity") +
+    facet_wrap(~qualimap_red$scaffold) +
+    theme(panel.background = element_blank(),
+          legend.position = "none",
+          axis.text.x = element_blank(),
+          axis.title.x = element_blank()) +
+    xlab("HiC-scaffold") +
+    ylab("mean coverage")
+
+#density in one plot normalised by mean coverage per ind
+ggplot(qualimap_red, aes(qualimap_red$mean/qualimap_red$mean_ind, group=qualimap_red$scaffold)) +
+  geom_density(aes(fill=factor(qualimap_red$scaffold)), alpha=0.25) +
+  #facet_wrap(~qualimap_red$scaffold) +
+  scale_fill_discrete(name="HiC-scaffold") +
+  theme(panel.background = element_blank(),
+        axis.line = element_line(size = 1)) +
+  xlab("Mean coverage/mean cov per individual") 
+
+##density in one plot normalised by mean coverage per ind
+ggplot(qualimap_red, aes(qualimap_red$mean/qualimap_red$mean_ind, group=qualimap_red$scaffold)) +
+  geom_density(aes(fill=factor(qualimap_red$scaffold)), alpha=0.25) +
+  facet_wrap(~qualimap_red$scaffold) +
+  scale_fill_discrete(name="HiC-scaffold") +
+  theme(panel.background = element_blank(),
+        axis.line = element_line(size = 1),
+        legend.position = "none") +
+  xlab("Mean coverage/mean cov per individual") 
+
+
+
+```
+
+
+```{r list_sex_b2, echo=FALSE}
+
+lept_males <- qualimap_red[qualimap_red$scaffold==1 & qualimap_red$mean>qualimap_red$mean_ind*0.75,]
+
+length(lept_males$individual)
+
+ggplot(lept_males, aes(lept_males$individual,  100*lept_males$mean/lept_males$mean_ind, fill=lept_males$individual)) +
+    geom_bar(stat="identity") +
+    facet_wrap(~lept_males$scaffold) +
+    theme(panel.background = element_blank(),
+          legend.position = "none",
+          axis.text.x = element_blank(),
+          axis.title.x = element_blank()) +
+    labs(title = "Males") +
+    xlab("HiC-scaffold") +
+    ylab("mean coverage/mean coverage per ind (%)")
+
+
+lept_females <- qualimap_red[qualimap_red$scaffold==1 & qualimap_red$mean<qualimap_red$mean_ind*0.75,]
+length(lept_females$individual)
+
+ggplot(lept_females, aes(lept_females$individual,  100*lept_females$mean/lept_females$mean_ind, fill=lept_females$individual)) +
+    geom_bar(stat="identity") +
+    facet_wrap(~lept_females$scaffold) +
+    theme(panel.background = element_blank(),
+          legend.position = "none",
+          axis.text.x = element_blank(),
+          axis.title.x = element_blank()) +
+    labs(title = "Females") +
+    xlab("HiC-scaffold") +
+    ylab("mean coverage/mean coverage per ind (%)")
+
+qualimap_1 <- qualimap_red[qualimap_red$scaffold==1,]
+
+#density
+ggplot(qualimap_1, aes(qualimap_1$mean/qualimap_1$mean_ind, group=qualimap_1$scaffold)) +
+  geom_density(aes(fill=factor(qualimap_1$scaffold)), alpha=0.25) +
+   # facet_wrap(~qualimap_1$scaffold) +
+  scale_fill_discrete(name="HiC-scaffold") +
+  theme(panel.background = element_blank(),
+        axis.line = element_line(size = 1),
+        legend.position = "none") +
+  xlab("Mean coverage/mean cov per individual") 
+
+
+
+
+```
+
+
+
+```{r write_b2, eval=FALSE}
+
+# anti_join(lept_males, lept_males_6, "individual")
+# #returns 0
+# anti_join(lept_females, lept_females_6, "individual")
+#returns 0
+
+write.table(unique(lept_males$individual), file = "list_lept_males_cat2", append = TRUE)
+write.table(unique(lept_females$individual), file = "list_lept_females_cat2", append = TRUE)
+
+
+
+```
+
+
+```{r filtering_samples, echo=FALSE}
+# from stacks
+# P14461_140_S136	1,469
+# P14461_138_S134	1,512
+# P14461_137_S133	1,568
+# P14461_135_S131	1,714
+# P14461_139_S135	1,933
+# P14461_136_S132	2,12
+# P14461_134_S130	2,218
+# P10853_157_S86	2,859
+# P14460_122_S22	2,966
+
+
+
+mapped_reads <- read.csv("summary_mapping_cat.csv", header=T, sep = ";")
+summary(mapped_reads)
+hist(mapped_reads$mapped_read,breaks = 200)
+
+ggplot(mapped_reads, aes(mapped_reads$sample, mapped_reads$mapped_read)) +
+   geom_bar(stat = "identity") +
+   theme(panel.background = element_blank(),
+          axis.text.x = element_text(angle = 90),
+          axis.title.x = element_blank()) +
+    labs(title = "Reads per individual") +
+    ylab("Number of mapped reads")
+
+print("Samples with less than 100 000 reads:")
+mapped_reads[mapped_reads$mapped_read<100000,]
+
+```
+

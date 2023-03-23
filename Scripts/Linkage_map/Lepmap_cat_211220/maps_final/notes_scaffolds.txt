@@ -1,0 +1,52 @@
+1 ok
+2 ok
+3 mess in the middle
+4 inv? start
+5 split
+6 gap middle, inv end
+7 ok
+8 large inv start
+9 ok
+10 multiple inv? start and middle
+11 small inv start
+12 inv? middle, end??
+13 inv? start, gap
+14 inv start
+15 ok
+16 lots of variation
+17 inv? start, end
+18 gap in the start, 
+19 inv? start
+20 inv? start, middle
+21 inv? start
+22 inv? start
+23 inv? early
+24 large inversion end
+25 inv? start
+26 ok
+27 lots of variation
+28 translocation? middle
+29 big gap in middle 
+30 messy at start and end
+31 two inv at end
+32 ok, few markers
+33 ok, gap at start
+34 translocation? end
+35 messy end
+36 inv start
+37 ok, few markers
+38 ok, few markers
+39 large inv start
+40 ok, gap middle
+41 inv end
+42 ok
+43 ok
+44 ok 
+45 inv? translocation near end?
+46 ok, few markers
+47 Inv start, unlinked markers middle? Duplication?
+48 lots of variation
+49 ok, big gap in middle
+50 lots of variation
+51 ok
+52 large inv start

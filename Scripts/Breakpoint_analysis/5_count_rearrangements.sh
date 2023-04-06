@@ -1,5 +1,7 @@
 #!/bin/bash
 
+cd /home/larshook/LarsH/WHOLE_GENOME_ALIGNMENTS/BREAKPOINT_ANALYSIS
+
 printf "Rearrangements in "$1"\n\n" > "$1".count
 
 printf "fi_swe: " >> "$1".count

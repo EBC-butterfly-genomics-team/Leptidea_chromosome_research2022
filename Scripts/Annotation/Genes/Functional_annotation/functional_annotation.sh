@@ -9,6 +9,7 @@
 module load bioinfo-tools
 module load maker/3.01.04    
 
+# integrates result of interproscan and uniprot blast with annotation gff and fasta files...
 
 ASSEMBLY=P14502_103
 GFF_PATH=/home/larshook/LarsH/MAKER/SIN_Swe
